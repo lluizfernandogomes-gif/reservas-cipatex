@@ -8,7 +8,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
 <title>Reserva de Veículos · Cipatex</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Reservas">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <style>
 :root{--logo:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 119 41%22 fill=%22currentColor%22%3E%3Cpath d=%22M 25.243 11.279 L 18.846 11.279 L 18.846 30.916 L 25.243 30.916 Z%22/%3E%3Cpath d=%22M 22.09 4.702 C 19.898 4.702 18.055 5.842 18.055 7.244 C 18.055 8.737 19.898 9.877 22.09 9.877 C 24.283 9.877 26.037 8.734 26.037 7.244 C 26.037 5.842 24.283 4.702 22.09 4.702 Z%22/%3E%3Cpath d=%22M 10.52 28.024 C 8.501 26.096 7.276 21.009 7.011 16.627 C 6.923 15.222 8.151 14.432 9.115 13.909 C 11.308 12.68 15.251 13.732 16.392 12.857 C 17.006 12.504 16.918 11.981 17.094 11.275 L 5.433 11.275 C 2.891 12.154 -0.181 15.399 0.26 18.202 C 1.048 23.289 1.839 27.321 4.645 30.916 L 17.094 30.916 C 17.094 30.39 17.182 30.04 16.918 29.599 C 15.781 28.285 12.448 30.04 10.52 28.024 Z%22/%3E%3Cpath d=%22M 39.886 11.275 L 27.349 11.275 L 27.349 36.526 L 34.1 36.526 C 34.1 34.421 34.1 32.317 35.064 31.004 C 35.24 30.827 35.328 30.654 35.59 30.39 C 35.939 30.04 36.292 29.69 36.642 29.514 C 38.22 28.55 39.971 29.161 41.553 28.55 C 44.709 27.233 46.111 24.515 46.372 21.009 L 46.372 19.78 C 46.111 15.748 43.131 12.242 39.886 11.275 Z M 36.642 27.763 C 35.854 28.285 34.975 28.462 33.923 28.462 L 33.923 13.471 C 34.975 13.647 35.854 13.994 36.642 14.608 C 38.308 16.013 39.272 18.379 39.272 20.836 C 39.272 24.606 38.22 26.795 36.642 27.763 Z%22/%3E%3Cpath d=%22M 59.441 11.275 L 48.391 11.275 C 48.391 12.066 48.479 12.857 49.181 13.206 C 50.936 14.258 53.566 13.206 55.233 14.082 C 55.671 14.258 56.108 14.696 56.373 15.222 C 56.723 16.274 56.285 16.977 55.233 17.679 C 52.514 19.519 46.29 20.836 46.551 24.779 C 46.639 27.495 47.515 29.252 49.534 31.004 L 63.646 31.004 L 63.646 15.137 C 63.646 11.981 62.241 11.275 59.438 11.275 M 56.634 28.723 C 56.197 28.638 55.671 28.374 55.233 28.024 C 54.266 27.321 53.743 26.008 53.743 24.606 C 53.743 22.499 54.354 21.273 55.233 20.744 C 55.671 20.483 56.197 20.306 56.634 20.306 Z%22/%3E%3Cpath d=%22M 92.138 11.275 L 79.605 11.275 C 77.147 12.154 76.014 15.137 75.396 18.202 C 74.697 21.711 76.625 23.992 77.324 27.233 C 77.938 30.305 78.637 31.004 83.552 31.004 L 91.962 31.004 C 92.053 30.305 91.877 30.04 91.439 29.514 C 90.302 28.374 85.564 30.481 84.689 27.057 C 82.76 20.483 91.877 22.848 92.844 18.29 C 93.367 15.66 93.458 11.275 92.138 11.275 Z M 86.44 18.908 C 86.44 18.908 85.388 20.045 84.774 20.836 C 84.603 21.009 84.427 21.273 84.25 21.45 C 83.813 22.149 83.375 22.763 83.375 22.763 C 82.67 22.064 82.055 20.133 82.055 18.117 C 82.055 15.837 83.107 14.784 84.25 14.258 C 84.95 13.994 85.74 13.909 86.44 13.817 Z%22/%3E%3Cpath d=%22M 112.744 11.275 L 110.636 11.275 L 104.938 18.29 L 100.909 11.275 L 94.156 11.275 L 101.086 23.201 L 94.773 31.004 L 96.524 31.004 L 101.873 24.515 L 105.728 31.004 L 111.949 31.004 L 105.814 19.692 Z%22/%3E%3Cpath d=%22M 76.274 29.426 C 75.483 28.639 74.431 29.599 73.47 28.988 C 72.418 28.201 72.242 27.149 72.242 25.832 L 72.242 10.492 L 76.711 10.492 L 75.836 8.561 L 72.242 8.561 L 72.242 4.441 L 65.668 4.441 L 65.668 8.561 L 61.721 8.561 L 62.505 10.492 L 65.668 10.492 L 65.668 24.254 C 65.668 27.587 69.085 30.916 72.065 30.916 L 77.064 30.916 C 76.973 30.214 76.796 29.867 76.274 29.426 Z%22/%3E%3Cpath d=%22M 115.453 11.349 C 113.672 11.349 112.267 12.698 112.267 14.42 C 112.267 16.142 113.672 17.511 115.433 17.511 C 117.194 17.511 118.579 16.145 118.579 14.42 C 118.579 12.695 117.194 11.349 115.453 11.349 Z M 115.453 16.874 C 114.084 16.874 113.055 15.789 113.055 14.42 C 113.055 13.051 114.084 11.967 115.417 11.967 C 116.75 11.967 117.796 13.071 117.796 14.44 C 117.796 15.809 116.782 16.894 115.453 16.874 Z%22/%3E%3Cpath d=%22M 116.145 14.513 L 116.145 14.474 C 116.501 14.363 116.782 14.117 116.782 13.742 C 116.782 13.444 116.651 13.219 116.466 13.088 C 116.26 12.938 115.995 12.843 115.416 12.843 C 114.91 12.843 114.518 12.899 114.234 12.938 L 114.234 16.009 L 114.946 16.009 L 114.946 14.791 L 115.283 14.791 C 115.678 14.791 115.864 14.941 115.92 15.261 C 116.015 15.634 116.07 15.898 116.165 16.009 L 116.913 16.009 C 116.857 15.898 116.782 15.728 116.688 15.261 C 116.593 14.849 116.442 14.604 116.142 14.513 M 115.302 14.287 L 114.966 14.287 L 114.966 13.408 C 115.041 13.389 115.172 13.369 115.358 13.369 C 115.809 13.369 116.015 13.559 116.015 13.84 C 116.015 14.157 115.698 14.287 115.302 14.287 Z%22/%3E%3C/svg%3E");--bg:#f4f4f8;--card:#fff;--tx:#151520;--mut:#79798d;--ln:#e1e2ea;--pri:#036c99;--pri2:#0296d3;--navy:#151520;--navy2:#2e2e3b;--lav:#bcbcd7;--ok:#1d8a4e;--warn:#b7791f;--err:#c0392b;--r:12px}
 *{box-sizing:border-box}
@@ -51,13 +55,23 @@ body:has(#vLogin:not(.hide)){min-height:100vh;background:linear-gradient(170deg,
 .tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;background:#eef1f5;color:var(--mut);font-weight:600}
 .tag.reservada{background:#eaf2f9;color:var(--pri2)}.tag.em_uso{background:#fff4e0;color:var(--warn)}
 .tag.concluida{background:#e6f4ec;color:var(--ok)}.tag.cancelada,.tag.no_show{background:#f3e9e9;color:var(--err)}
-.tag.gestor{background:#efe8fa;color:#6b3fa0}.tag.pendente{background:#fff4e0;color:var(--warn)}
+.tag.gestor{background:#efe8fa;color:#6b3fa0}.tag.portaria{background:#e6f3fa;color:var(--pri)}
+.ag-bar.bloq{background:repeating-linear-gradient(45deg,#79798d 0,#79798d 6px,#8d8da0 6px,#8d8da0 12px)}
+.pt-item{border:1px solid var(--ln);border-radius:12px;padding:14px;background:#fff;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.pt-item .grow{flex:1;min-width:200px}.pt-item .t{font-size:17px;font-weight:700}.pt-item .s{color:var(--mut);font-size:14px;margin-top:2px}
+.pt-item .btn{padding:12px 18px;font-size:15px}.pt-item.late{border-color:var(--err);background:#fff7f6}
+.sec-h{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--mut);margin:18px 0 8px}
+table.rel{width:100%;border-collapse:collapse;font-size:14px}table.rel th,table.rel td{padding:8px 6px;border-bottom:1px solid var(--ln);text-align:right;white-space:nowrap}
+table.rel th:first-child,table.rel td:first-child{text-align:left;white-space:normal}table.rel th{font-size:12px;color:var(--mut);font-weight:600}
+.bar{height:6px;border-radius:3px;background:#e6f3fa;overflow:hidden;min-width:60px}.bar i{display:block;height:100%;background:var(--pri2)}
+.tbl{overflow-x:auto}.hint{font-size:13px;color:var(--mut)}
+.drop{border:2px dashed var(--ln);border-radius:12px;padding:18px;text-align:center;color:var(--mut);cursor:pointer}.drop:hover{border-color:var(--pri2)}.tag.pendente{background:#fff4e0;color:var(--warn)}
 .veic{cursor:pointer}.veic.sel{border-color:var(--pri2);outline:2px solid var(--pri2)}
 .veic.ocup{opacity:.45;cursor:not-allowed}
 .empty{color:var(--mut);text-align:center;padding:20px}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-bottom:12px}
 .toolbar>*{flex:1;min-width:140px}
-.toolbar .btn{flex:0}
+.toolbar .btn{flex:0 0 auto;white-space:nowrap}
 /* agenda */
 .ag{overflow-x:auto}
 .ag-grid{min-width:720px}
@@ -198,12 +212,14 @@ async function boot(){
   const [{ data: emp }] = await Promise.all([sb.from('empresas').select('*').single(), loadBase()]);
   EMP = emp;
   $('#vLogin').classList.add('hide'); $('#vApp').classList.remove('hide');
-  $('#who').textContent = ME.nome + (ME.papel === 'gestor' ? ' · gestor' : '');
-  const tabs = [['nova','Nova reserva'],['minhas','Minhas reservas'],['agenda','Agenda']];
-  if (ME.papel === 'gestor') tabs.push(['todas','Todas reservas'],['veiculos','Veículos'],['usuarios','Usuários'],['config','Configurações']);
+  $('#who').textContent = ME.nome + ({gestor:' · gestor', portaria:' · portaria'}[ME.papel] || '');
+  const tabs = ME.papel === 'portaria' ? [['portaria','Portaria'],['agenda','Agenda']]
+    : ME.papel === 'gestor' ? [['portaria','Portaria'],['nova','Nova reserva'],['minhas','Minhas reservas'],['agenda','Agenda'],['todas','Todas reservas'],['veiculos','Veículos'],['usuarios','Usuários'],['relatorios','Relatórios'],['config','Configurações']]
+    : [['nova','Nova reserva'],['minhas','Minhas reservas'],['agenda','Agenda']];
+  if (!tabs.some(t => t[0] === TAB)) TAB = null;
   $('#nav').innerHTML = tabs.map(([k,l]) => `<button data-t="${k}">${l}</button>`).join('');
   $('#nav').onclick = e => { const t = e.target.dataset.t; if (t) go(t); };
-  go(TAB || 'minhas');
+  go(TAB || (ME.papel === 'portaria' ? 'portaria' : 'minhas'));
 }
 
 async function loadBase(){
@@ -217,7 +233,7 @@ async function loadBase(){
 function go(t){
   TAB = t;
   document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
-  ({nova:vNova, minhas:vMinhas, agenda:vAgenda, todas:vTodas, veiculos:vVeiculos, usuarios:vUsuarios, config:vConfig})[t]();
+  ({portaria:vPortaria, nova:vNova, minhas:vMinhas, agenda:vAgenda, todas:vTodas, veiculos:vVeiculos, usuarios:vUsuarios, relatorios:vRelatorios, config:vConfig})[t]();
 }
 
 const RES_SEL = '*, veiculo:veiculos(placa,modelo,km_atual), usuario:usuarios!reservas_usuario_id_fkey(nome,usuario)';
@@ -243,8 +259,8 @@ function vNova(){
   </div>
   <div class="card"><h2>Escolha o veículo</h2><div id="nVeic" class="list"></div>
     <button class="btn full" id="nBtn" disabled>Confirmar reserva</button></div>`;
-  if (gestor) sb.from('usuarios').select('id,nome,usuario').eq('ativo',true).order('nome').then(({data}) => {
-    $('#nPara').innerHTML += (data||[]).filter(u=>u.id!==ME.id).map(u=>`<option value="${u.id}">${esc(u.nome)} (${esc(u.usuario)})</option>`).join('');
+  if (gestor) sb.from('usuarios').select('id,nome,usuario,papel').eq('ativo',true).order('nome').then(({data}) => {
+    $('#nPara').innerHTML += (data||[]).filter(u=>u.id!==ME.id && u.papel!=='portaria').map(u=>`<option value="${u.id}">${esc(u.nome)} (${esc(u.usuario)})</option>`).join('');
   });
   let sel = null;
   const refresh = async () => {
@@ -256,6 +272,8 @@ function vNova(){
     const { data: oc } = await sb.from('reservas').select('veiculo_id,inicio,fim,usuario:usuarios!reservas_usuario_id_fkey(nome)')
       .in('status',['reservada','em_uso']).lt('inicio', b.toISOString()).gt('fim', a.toISOString());
     const ocup = {}; (oc||[]).forEach(r => ocup[r.veiculo_id] = r);
+    const { data: bl } = await sb.from('bloqueios').select('veiculo_id,inicio,fim,motivo').eq('ativo',true).lt('inicio', b.toISOString()).gt('fim', a.toISOString());
+    (bl||[]).forEach(x => ocup[x.veiculo_id] = { ...x, bloq: true });
     const cat = $('#nCat').value;
     const lista = VEIC.filter(v => v.ativo && (!cat || v.categoria_id === cat));
     lista.sort((x,y) => (!!ocup[x.id]) - (!!ocup[y.id]));
@@ -264,7 +282,7 @@ function vNova(){
       return `<div class="item veic ${o?'ocup':''}" data-id="${v.id}">
         <div class="grow"><div class="t">${esc(v.modelo)} · ${esc(v.placa)}</div>
         <div class="s">${esc(v.categoria?.nome||'Sem categoria')}${v.descricao?' · '+esc(v.descricao):''}</div></div>
-        ${o ? `<span class="tag cancelada">Ocupado ${fmtPer(o.inicio,o.fim)}</span>` : '<span class="tag concluida">Livre</span>'}</div>`;
+        ${o ? (o.bloq ? `<span class="tag">Bloqueado: ${esc(o.motivo)}</span>` : `<span class="tag cancelada">Ocupado ${fmtPer(o.inicio,o.fim)}</span>`) : '<span class="tag concluida">Livre</span>'}</div>`;
     }).join('') : '<div class="empty">Nenhum veículo nessa categoria</div>';
     $('#nVeic').querySelectorAll('.veic:not(.ocup)').forEach(el => el.onclick = () => {
       $('#nVeic').querySelectorAll('.veic').forEach(x => x.classList.remove('sel'));
@@ -290,17 +308,21 @@ function vNova(){
 // ===== Item de reserva com ações =====
 function resItem(r, opts={}){
   const agora = Date.now(), ini = new Date(r.inicio).getTime(), ant = (EMP.config.retirada_antecipada_min||30)*6e4;
-  const podeRet = r.status === 'reservada' && agora >= ini - ant && agora < new Date(r.fim).getTime();
+  const staff = ME.papel === 'gestor' || ME.papel === 'portaria';
+  const podeRet = staff && r.status === 'reservada' && agora >= ini - ant && agora < new Date(r.fim).getTime();
+  const proxima = !staff && r.status === 'reservada' && agora >= ini - ant;
   const atrasada = r.status === 'em_uso' && agora > new Date(r.fim).getTime();
   const km = r.km_retorno != null ? ` · ${num(r.km_retorno - r.km_saida)} km rodados` : r.km_saida != null ? ` · saiu com ${num(r.km_saida)} km` : '';
   return `<div class="item">
     <div class="grow"><div class="t">${esc(r.veiculo?.modelo)} · ${esc(r.veiculo?.placa)}</div>
       <div class="s">${fmtPer(r.inicio, r.fim)}${opts.quem ? ' · '+esc(r.usuario?.nome) : ''}${r.destino ? ' · '+esc(r.destino) : ''}${km}</div>
-      ${r.obs_devolucao ? `<div class="s">Obs: ${esc(r.obs_devolucao)}</div>` : ''}</div>
+      ${r.obs_devolucao ? `<div class="s">Obs: ${esc(r.obs_devolucao)}</div>` : ''}
+      ${r.motivo_cancelamento && r.status === 'cancelada' ? `<div class="s">${esc(r.motivo_cancelamento)}</div>` : ''}
+      ${proxima ? `<div class="s" style="color:var(--pri)">Retire a chave na portaria</div>` : ''}</div>
     <span class="tag ${r.status}">${STATUS[r.status]}${atrasada?' · atrasada':''}</span>
-    ${podeRet ? `<button class="btn sm ok" data-a="ret" data-id="${r.id}">Retirar</button>` : ''}
-    ${r.status === 'em_uso' ? `<button class="btn sm" data-a="dev" data-id="${r.id}">Devolver</button>` : ''}
-    ${r.status === 'reservada' ? `<button class="btn sm sec" data-a="can" data-id="${r.id}">Cancelar</button>` : ''}
+    ${podeRet ? `<button class="btn sm ok" data-a="ret" data-id="${r.id}">Entregar chave</button>` : ''}
+    ${staff && r.status === 'em_uso' ? `<button class="btn sm" data-a="dev" data-id="${r.id}">Receber chave</button>` : ''}
+    ${r.status === 'reservada' && (ME.papel === 'gestor' || r.usuario_id === ME.id) ? `<button class="btn sm sec" data-a="can" data-id="${r.id}">Cancelar</button>` : ''}
   </div>`;
 }
 
@@ -310,9 +332,9 @@ function bindAcoes(root, rows, reload){
     const r = rows.find(x => x.id === b.dataset.id); if (!r) return;
     if (b.dataset.a === 'can') return confirmar(`Cancelar a reserva do ${r.veiculo.modelo} em ${fmtPer(r.inicio,r.fim)}?`, async () => {
       const { error } = await sb.rpc('cancelar_reserva', { p_id: r.id }); if (error) throw error; reload(); });
-    if (b.dataset.a === 'ret') return pedirKm('Retirada', `${r.veiculo.modelo} · ${r.veiculo.placa}`, `Último KM registrado: ${num(r.veiculo.km_atual)}`, r.veiculo.km_atual, false,
+    if (b.dataset.a === 'ret') return pedirKm('Entregar chave', `${r.veiculo.modelo} · ${r.veiculo.placa} → ${r.usuario?.nome || ''}`, `Último KM registrado: ${num(r.veiculo.km_atual)}`, r.veiculo.km_atual, false,
       async (km) => { const { error } = await sb.rpc('retirar', { p_id: r.id, p_km: km }); if (error) throw error; reload(); });
-    if (b.dataset.a === 'dev') return pedirKm('Devolução', `${r.veiculo.modelo} · ${r.veiculo.placa}`, `KM de saída: ${num(r.km_saida)}`, '', true,
+    if (b.dataset.a === 'dev') return pedirKm('Receber chave', `${r.veiculo.modelo} · ${r.veiculo.placa} ← ${r.usuario?.nome || ''}`, `KM de saída: ${num(r.km_saida)}`, '', true,
       async (km, obs) => { const { error } = await sb.rpc('devolver', { p_id: r.id, p_km: km, p_obs: obs }); if (error) throw error; reload(); });
   };
 }
@@ -374,6 +396,8 @@ async function vAgenda(){
     const cat = $('#agC').value;
     const vs = VEIC.filter(v => v.ativo && (!cat || v.categoria_id === cat));
     const por = {}; (data||[]).forEach(r => (por[r.veiculo_id] ||= []).push(r));
+    const { data: bl } = await sb.from('bloqueios').select('*').eq('ativo',true).lt('inicio', b.toISOString()).gt('fim', a.toISOString());
+    (bl||[]).forEach(x => (por[x.veiculo_id] ||= []).push({ ...x, status: 'bloq', usuario: { nome: x.motivo } }));
     $('#agG').innerHTML = `<div class="ag-head"><div></div><div class="ag-hours">${Array.from({length:24},(_,h)=>`<span>${h}</span>`).join('')}</div></div>` +
       (vs.length ? vs.map(v => `<div class="ag-row"><div class="nm">${esc(v.modelo)}<small>${esc(v.placa)}</small></div><div class="ag-tl">${
         (por[v.id]||[]).map(r => {
@@ -425,8 +449,13 @@ async function vVeiculos(){
     <div class="toolbar"><div><input id="cNome" placeholder="Nova categoria (ex.: Utilitário)"></div><button class="btn" id="cAdd">Adicionar</button></div>
     <div id="cMsg2"></div><div class="list" id="cL"></div></div>
   <div class="card"><h2>Veículos (${VEIC.length})</h2>
-    <div class="toolbar"><div><input id="vQ" placeholder="Buscar placa ou modelo"></div><button class="btn" id="vAdd">+ Veículo</button></div>
-    <div class="list" id="vL"></div></div>`;
+    <div class="toolbar"><div><input id="vQ" placeholder="Buscar placa ou modelo"></div><button class="btn sec" id="vImp">Importar planilha</button><button class="btn" id="vAdd">+ Veículo</button></div>
+    <div class="list" id="vL"></div></div>
+  <div class="card"><h2>Bloqueios para manutenção</h2>
+    <p class="hint" style="margin-top:0">Para bloquear, abra o veículo em "Editar" e use "Bloquear para manutenção".</p>
+    <div class="list" id="bL"><div class="empty">Carregando…</div></div></div>`;
+  $('#vImp').onclick = importarVeiculos;
+  carregarBloqueios();
   $('#cL').innerHTML = CATS.length ? CATS.map(c => `<div class="item"><div class="grow"><div class="t">${esc(c.nome)}</div>
     <div class="s">${VEIC.filter(v=>v.categoria_id===c.id).length} veículo(s)</div></div>
     ${c.ativo?'':'<span class="tag">Inativa</span>'}<button class="btn sm sec" data-c="${c.id}">Editar</button></div>`).join('') : '<div class="empty">Crie categorias como Passeio, Utilitário, Caminhonete…</div>';
@@ -465,7 +494,9 @@ function formVeiculo(v){
     ${v ? `<p style="font-size:12px;color:var(--mut);margin:4px 0 0">Alterar o KM aqui fica registrado como ajuste manual.</p>
     <label><input type="checkbox" id="fvA" style="width:auto" ${v.ativo?'checked':''}> Ativo (disponível para reserva)</label>` : ''}
     <div id="fvMsg"></div>
-    <div class="row" style="margin-top:12px"><button class="btn sec" onclick="closeModal()">Voltar</button><button class="btn" id="fvS">Salvar</button></div>`);
+    <div class="row" style="margin-top:12px"><button class="btn sec" onclick="closeModal()">Voltar</button><button class="btn" id="fvS">Salvar</button></div>
+    ${v ? `<button class="btn sec full" id="fvB">Bloquear para manutenção</button>` : ''}`);
+  if (v) $('#fvB').onclick = () => formBloqueio(v);
   $('#fvS').onclick = async () => {
     const d = { placa: $('#fvP').value.trim().toUpperCase().replace(/\s/g,''), modelo: $('#fvM').value.trim(), categoria_id: $('#fvC').value || null,
       descricao: $('#fvD').value.trim() || null, km_atual: parseInt($('#fvK').value,10) || 0 };
@@ -480,20 +511,29 @@ function formVeiculo(v){
 // ===== Usuários (gestor) =====
 async function vUsuarios(){
   $('#main').innerHTML = `<div class="card"><h2>Usuários</h2>
-    <div class="toolbar"><div><input id="uQ" placeholder="Buscar nome ou usuário"></div><button class="btn" id="uAdd">+ Usuário</button></div>
+    <div class="toolbar"><div><input id="uQ" placeholder="Buscar nome ou usuário"></div>
+      <div style="flex:0 0 150px"><select id="uF"><option value="">Todos</option><option value="usuario">Motoristas</option><option value="gestor">Gestores</option><option value="portaria">Portaria</option><option value="pendente">Pendentes</option></select></div>
+      <button class="btn sec" id="uImp">Importar planilha</button><button class="btn sec" id="uCod">Códigos pendentes</button><button class="btn" id="uAdd">+ Usuário</button></div>
     <div class="stat" id="uStat"></div><div class="list" id="uL"><div class="empty">Carregando…</div></div></div>`;
   const { data } = await sb.from('usuarios').select('*').order('nome');
   const us = data || [];
-  $('#uStat').innerHTML = `<div><b>${us.filter(u=>u.ativo).length}</b><span>Ativos</span></div><div><b>${us.filter(u=>u.status==='pendente'&&u.ativo).length}</b><span>Aguardando 1º acesso</span></div><div><b>${us.filter(u=>u.papel==='gestor').length}</b><span>Gestores</span></div>`;
+  $('#uStat').innerHTML = `<div><b>${us.filter(u=>u.ativo).length}</b><span>Ativos</span></div><div><b>${us.filter(u=>u.status==='pendente'&&u.ativo).length}</b><span>Aguardando 1º acesso</span></div><div><b>${us.filter(u=>u.papel==='gestor').length}</b><span>Gestores</span></div><div><b>${us.filter(u=>u.papel==='portaria').length}</b><span>Portaria</span></div>`;
   const draw = () => {
     const t = $('#uQ').value.trim().toLowerCase();
-    const l = us.filter(u => !t || (u.nome+' '+u.usuario).toLowerCase().includes(t));
+    const f = $('#uF').value;
+    const l = us.filter(u => (!t || (u.nome+' '+u.usuario).toLowerCase().includes(t)) && (!f || (f === 'pendente' ? u.status === 'pendente' : u.papel === f)));
     $('#uL').innerHTML = l.map(u => `<div class="item"><div class="grow"><div class="t">${esc(u.nome)}</div><div class="s">${esc(u.usuario)}</div></div>
-      ${u.papel==='gestor'?'<span class="tag gestor">Gestor</span>':''}${u.status==='pendente'?'<span class="tag pendente">Pendente</span>':''}${u.ativo?'':'<span class="tag cancelada">Desativado</span>'}
+      ${u.papel==='gestor'?'<span class="tag gestor">Gestor</span>':''}${u.papel==='portaria'?'<span class="tag portaria">Portaria</span>':''}${u.status==='pendente'?'<span class="tag pendente">Pendente</span>':''}${u.ativo?'':'<span class="tag cancelada">Desativado</span>'}
       <button class="btn sm sec" data-u="${u.id}">Editar</button></div>`).join('') || '<div class="empty">Nenhum usuário</div>';
   };
-  $('#uQ').oninput = draw; draw();
+  $('#uQ').oninput = draw; $('#uF').onchange = draw; draw();
   $('#uAdd').onclick = () => formUsuario(null);
+  $('#uImp').onclick = importarUsuarios;
+  $('#uCod').onclick = () => confirmar('Gerar NOVOS códigos para todos os usuários que ainda não fizeram o primeiro acesso? Os códigos anteriores deixam de valer.', async () => {
+    const { data, error } = await sb.rpc('gerar_codigos_pendentes'); if (error) throw error;
+    if (!data.length) { setTimeout(() => modal('<h2>Nada a gerar</h2><p>Não há usuários pendentes.</p><button class="btn full" onclick="closeModal()">Ok</button>'), 10); return; }
+    await baixarCodigos(data);
+  });
   $('#uL').onclick = e => { const id = e.target.dataset.u; if (id) formUsuario(us.find(u=>u.id===id)); };
 }
 
@@ -512,7 +552,7 @@ function formUsuario(u){
   modal(`<h2>${u?'Editar':'Novo'} usuário</h2>
     <label>Nome completo</label><input id="fuN" value="${esc(u?.nome||'')}">
     <label>Usuário (login)</label><input id="fuU" value="${esc(u?.usuario||'')}" autocapitalize="none" ${u?.auth_id?'disabled':''} placeholder="ex.: joao.silva">
-    <label>Papel</label><select id="fuP"><option value="usuario">Usuário (motorista)</option><option value="gestor" ${u?.papel==='gestor'?'selected':''}>Gestor</option></select>
+    <label>Papel</label><select id="fuP"><option value="usuario">Usuário (motorista)</option><option value="portaria" ${u?.papel==='portaria'?'selected':''}>Portaria (entrega e recebe chaves)</option><option value="gestor" ${u?.papel==='gestor'?'selected':''}>Gestor</option></select>
     ${u ? `<label><input type="checkbox" id="fuA" style="width:auto" ${u.ativo?'checked':''}> Ativo</label>` : ''}
     <div id="fuM"></div>
     <div class="row" style="margin-top:12px"><button class="btn sec" onclick="closeModal()">Voltar</button><button class="btn" id="fuS">Salvar</button></div>
@@ -552,6 +592,248 @@ function vConfig(){
     const { data } = await sb.from('empresas').select('*').single(); EMP = data; msg('#cfM','Salvo','ok');
   };
 }
+
+// ===== Portaria =====
+let _ptTimer = null;
+async function vPortaria(){
+  clearInterval(_ptTimer);
+  $('#main').innerHTML = `<div id="pMsg"></div>
+    <div class="card">
+      <div class="toolbar"><div><input id="pQ" placeholder="Buscar motorista, placa ou modelo"></div><button class="btn sec" id="pR">Atualizar</button></div>
+      <div class="stat" id="pStat"></div>
+      <div class="sec-h">Para entregar a chave</div><div class="list" id="pEnt"><div class="empty">Carregando…</div></div>
+      <div class="sec-h">Na rua (receber a chave)</div><div class="list" id="pRec"></div>
+    </div>`;
+  let rows = [];
+  const load = async () => {
+    const fimDia = new Date(); fimDia.setHours(23,59,59,999);
+    const [a, b] = await Promise.all([
+      sb.from('reservas').select(RES_SEL).eq('status','reservada').lt('inicio', fimDia.toISOString()).order('inicio'),
+      sb.from('reservas').select(RES_SEL).eq('status','em_uso').order('fim')
+    ]);
+    if (a.error || b.error) return msg('#pMsg', errText(a.error || b.error));
+    rows = [...a.data, ...b.data];
+    draw();
+  };
+  const draw = () => {
+    if (TAB !== 'portaria') return clearInterval(_ptTimer);
+    const t = ($('#pQ')?.value || '').trim().toLowerCase();
+    const f = r => !t || [r.usuario?.nome, r.veiculo?.placa, r.veiculo?.modelo].join(' ').toLowerCase().includes(t);
+    const agora = Date.now(), ant = (EMP.config.retirada_antecipada_min || 30) * 6e4;
+    const ent = rows.filter(r => r.status === 'reservada' && f(r));
+    const rec = rows.filter(r => r.status === 'em_uso' && f(r));
+    const atrasados = rows.filter(r => r.status === 'em_uso' && new Date(r.fim) < agora).length;
+    $('#pStat').innerHTML = `<div><b>${rows.filter(r=>r.status==='reservada').length}</b><span>Retiradas hoje</span></div>
+      <div><b>${rows.filter(r=>r.status==='em_uso').length}</b><span>Veículos na rua</span></div>
+      <div><b style="color:${atrasados?'var(--err)':'inherit'}">${atrasados}</b><span>Devolução atrasada</span></div>`;
+    $('#pEnt').innerHTML = ent.length ? ent.map(r => {
+      const libera = agora >= new Date(r.inicio).getTime() - ant;
+      return `<div class="pt-item"><div class="grow"><div class="t">${esc(r.usuario?.nome)}</div>
+        <div class="s"><b>${esc(r.veiculo?.modelo)} · ${esc(r.veiculo?.placa)}</b> · ${fmtPer(r.inicio, r.fim)}${r.destino ? ' · ' + esc(r.destino) : ''}</div></div>
+        ${libera ? `<button class="btn ok" data-a="ret" data-id="${r.id}">Entregar chave</button>` : `<span class="tag">Libera às ${fmt(new Date(new Date(r.inicio).getTime() - ant).toISOString()).slice(6)}</span>`}</div>`;
+    }).join('') : '<div class="empty">Nenhuma retirada pendente hoje</div>';
+    $('#pRec').innerHTML = rec.length ? rec.map(r => {
+      const late = new Date(r.fim) < agora;
+      return `<div class="pt-item ${late?'late':''}"><div class="grow"><div class="t">${esc(r.usuario?.nome)}</div>
+        <div class="s"><b>${esc(r.veiculo?.modelo)} · ${esc(r.veiculo?.placa)}</b> · devolução ${fmt(r.fim)} · saiu com ${num(r.km_saida)} km</div>
+        ${late ? '<div class="s" style="color:var(--err);font-weight:600">Devolução atrasada</div>' : ''}</div>
+        <button class="btn" data-a="dev" data-id="${r.id}">Receber chave</button></div>`;
+    }).join('') : '<div class="empty">Nenhum veículo na rua</div>';
+  };
+  const box = $('#main');
+  box.onclick = e => {
+    const b = e.target.closest('button[data-a]'); if (!b) return;
+    const r = rows.find(x => x.id === b.dataset.id); if (!r) return;
+    if (b.dataset.a === 'ret') pedirKm('Entregar chave', `${r.veiculo.modelo} · ${r.veiculo.placa} → ${r.usuario?.nome}`, `Confira o painel. Último KM registrado: ${num(r.veiculo.km_atual)}`, r.veiculo.km_atual, false,
+      async km => { const { error } = await sb.rpc('retirar', { p_id: r.id, p_km: km }); if (error) throw error; await loadBase(); load(); });
+    if (b.dataset.a === 'dev') pedirKm('Receber chave', `${r.veiculo.modelo} · ${r.veiculo.placa} ← ${r.usuario?.nome}`, `KM de saída: ${num(r.km_saida)}`, '', true,
+      async (km, obs) => { const { error } = await sb.rpc('devolver', { p_id: r.id, p_km: km, p_obs: obs }); if (error) throw error; await loadBase(); load(); });
+  };
+  $('#pQ').oninput = draw; $('#pR').onclick = load;
+  _ptTimer = setInterval(() => { if (!$('#modal').innerHTML) load(); }, 60000);
+  load();
+}
+
+// ===== Bloqueios =====
+async function carregarBloqueios(){
+  const { data, error } = await sb.from('bloqueios').select('*, veiculo:veiculos(placa,modelo)').eq('ativo', true).gt('fim', new Date().toISOString()).order('inicio');
+  if (error) return $('#bL').innerHTML = `<div class="msg err">${esc(errText(error))}</div>`;
+  $('#bL').innerHTML = data.length ? data.map(b => `<div class="item"><div class="grow"><div class="t">${esc(b.veiculo?.modelo)} · ${esc(b.veiculo?.placa)}</div>
+    <div class="s">${fmtPer(b.inicio, b.fim)} · ${esc(b.motivo)}</div></div>
+    ${new Date(b.inicio) <= new Date() ? '<span class="tag em_uso">Em andamento</span>' : '<span class="tag">Programado</span>'}
+    <button class="btn sm sec" data-b="${b.id}">${new Date(b.inicio) <= new Date() ? 'Liberar agora' : 'Remover'}</button></div>`).join('') : '<div class="empty">Nenhum bloqueio ativo</div>';
+  $('#bL').onclick = e => { const id = e.target.dataset.b; if (!id) return;
+    confirmar('Liberar o veículo para reservas a partir de agora?', async () => {
+      const { error } = await sb.rpc('encerrar_bloqueio', { p_id: id }); if (error) throw error; carregarBloqueios(); }); };
+}
+
+function formBloqueio(v){
+  const ini = new Date(); ini.setMinutes(0,0,0); ini.setHours(ini.getHours()+1);
+  const fim = new Date(ini.getTime() + 864e5);
+  modal(`<h2>Bloquear para manutenção</h2><p style="margin:0"><b>${esc(v.modelo)} · ${esc(v.placa)}</b></p>
+    <div class="row"><div><label>De</label><input type="datetime-local" id="fbI" step="900" value="${toLocalInput(ini)}"></div>
+    <div><label>Até</label><input type="datetime-local" id="fbF" step="900" value="${toLocalInput(fim)}"></div></div>
+    <label>Motivo</label><input id="fbM" placeholder="Ex.: revisão 20.000 km, funilaria">
+    <div id="fbMsg"></div>
+    <div class="row" style="margin-top:12px"><button class="btn sec" onclick="closeModal()">Voltar</button><button class="btn" id="fbS">Bloquear</button></div>`);
+  const salvar = async (cancelar) => {
+    $('#fbS').disabled = true;
+    const { data, error } = await sb.rpc('salvar_bloqueio', { p_veiculo: v.id, p_inicio: new Date($('#fbI').value).toISOString(),
+      p_fim: new Date($('#fbF').value).toISOString(), p_motivo: $('#fbM').value, p_cancelar: cancelar });
+    $('#fbS').disabled = false;
+    if (error) return msg('#fbMsg', errText(error));
+    if (data.conflitos) {
+      $('#fbMsg').innerHTML = `<div class="msg err">Existem <b>${data.conflitos}</b> reserva(s) nesse período. Bloquear vai cancelá-las, e os motoristas vão ver o motivo no app.</div>`;
+      $('#fbS').textContent = 'Bloquear e cancelar reservas'; $('#fbS').className = 'btn err';
+      $('#fbS').onclick = () => salvar(true); return;
+    }
+    closeModal(); vVeiculos();
+  };
+  $('#fbS').onclick = () => salvar(false);
+}
+
+// ===== Planilhas (SheetJS) =====
+let _xlsx = null;
+function loadXLSX(){
+  if (window.XLSX) return Promise.resolve(window.XLSX);
+  return _xlsx ||= new Promise((ok, fail) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload = () => ok(window.XLSX); s.onerror = () => { _xlsx = null; fail(new Error('Não foi possível carregar o leitor de planilhas')); };
+    document.head.appendChild(s);
+  });
+}
+const normKey = k => String(k).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim().replace(/[^a-z0-9]/g,'');
+async function lerPlanilha(file, mapa){
+  const X = await loadXLSX();
+  const wb = X.read(await file.arrayBuffer(), { type: 'array' });
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const raw = X.utils.sheet_to_json(ws, { defval: '', raw: false });
+  return raw.map(r => { const o = {}; for (const [k, v] of Object.entries(r)) { const c = mapa[normKey(k)]; if (c) o[c] = String(v).trim(); } return o; })
+            .filter(o => Object.values(o).some(v => v));
+}
+async function baixarXLSX(nome, abas){
+  const X = await loadXLSX(); const wb = X.utils.book_new();
+  for (const [aba, linhas, larg] of abas) {
+    const ws = X.utils.json_to_sheet(linhas);
+    if (larg) ws['!cols'] = larg.map(w => ({ wch: w }));
+    X.utils.book_append_sheet(wb, ws, aba);
+  }
+  X.writeFile(wb, nome);
+}
+function telaImport(titulo, ajuda, modelo, onFile){
+  modal(`<h2>${titulo}</h2><p class="hint" style="margin-top:0">${ajuda}</p>
+    <button class="btn sec full" id="imM" style="margin-top:0">Baixar planilha modelo</button>
+    <label class="drop" id="imD" style="margin-top:12px">Clique para escolher o arquivo (.xlsx, .xls ou .csv)<input type="file" id="imF" accept=".xlsx,.xls,.csv" hidden></label>
+    <div id="imMsg"></div><button class="btn sec full" onclick="closeModal()">Fechar</button>`);
+  $('#imM').onclick = () => modelo().catch(e => msg('#imMsg', errText(e)));
+  $('#imF').onchange = async () => {
+    const f = $('#imF').files[0]; if (!f) return;
+    $('#imD').firstChild.textContent = 'Lendo ' + f.name + '…';
+    try { await onFile(f); } catch (e) { msg('#imMsg', errText(e)); }
+    $('#imD').firstChild.textContent = 'Clique para escolher outro arquivo';
+    $('#imF').value = '';
+  };
+}
+const listaErros = erros => erros.length ? `<div class="msg err"><b>${erros.length} linha(s) com problema:</b><br>${erros.slice(0,30).map(e => `Linha ${e.linha}: ${esc(e.erro)}`).join('<br>')}${erros.length>30?'<br>…':''}</div>` : '';
+
+function importarVeiculos(){
+  telaImport('Importar veículos', 'Colunas: <b>Placa</b>, <b>Modelo</b>, Categoria, KM, Descrição. Placas que já existem são atualizadas (o KM não é alterado). Categorias novas são criadas automaticamente.',
+    () => baixarXLSX('modelo-veiculos.xlsx', [['Veículos', [{ Placa: 'ABC1D23', Modelo: 'Fiat Strada', Categoria: 'Utilitário', KM: 15230, 'Descrição': 'Branca - Expedição' }, { Placa: 'XYZ9K88', Modelo: 'Chevrolet Onix', Categoria: 'Passeio', KM: 48700, 'Descrição': '' }], [12,22,16,10,28]]]),
+    async f => {
+      const linhas = await lerPlanilha(f, { placa: 'placa', modelo: 'modelo', categoria: 'categoria', km: 'km', kmatual: 'km', quilometragem: 'km', descricao: 'descricao', obs: 'descricao', observacao: 'descricao' });
+      if (!linhas.length) throw new Error('Nenhuma linha encontrada. Confira se a primeira linha tem os títulos das colunas.');
+      if (!linhas.some(l => l.placa)) throw new Error('Não achei a coluna "Placa".');
+      const { data, error } = await sb.rpc('importar_veiculos', { p_linhas: linhas }); if (error) throw error;
+      $('#imMsg').innerHTML = `<div class="msg ok">${data.criados} veículo(s) criado(s), ${data.atualizados} atualizado(s).</div>` + listaErros(data.erros);
+      await loadBase(); if (TAB === 'veiculos') vVeiculos();
+    });
+}
+
+function importarUsuarios(){
+  telaImport('Importar usuários', 'Colunas: <b>Nome</b>, <b>Usuário</b> (login: minúsculas, sem espaço, ex.: joao.silva) e Papel (Motorista, Portaria ou Gestor; vazio = Motorista). Logins que já existem são ignorados. No fim você baixa uma planilha com o código de ativação de cada pessoa.',
+    () => baixarXLSX('modelo-usuarios.xlsx', [['Usuários', [{ Nome: 'João da Silva', 'Usuário': 'joao.silva', Papel: 'Motorista' }, { Nome: 'Maria Souza', 'Usuário': 'maria.souza', Papel: 'Gestor' }, { Nome: 'Carlos Lima', 'Usuário': 'portaria.carlos', Papel: 'Portaria' }], [28,20,14]]]),
+    async f => {
+      const linhas = await lerPlanilha(f, { nome: 'nome', nomecompleto: 'nome', usuario: 'usuario', login: 'usuario', papel: 'papel', perfil: 'papel', funcao: 'papel' });
+      if (!linhas.length) throw new Error('Nenhuma linha encontrada. Confira se a primeira linha tem os títulos das colunas.');
+      if (!linhas.some(l => l.usuario)) throw new Error('Não achei a coluna "Usuário".');
+      const { data, error } = await sb.rpc('importar_usuarios', { p_linhas: linhas }); if (error) throw error;
+      $('#imMsg').innerHTML = `<div class="msg ok">${data.criados.length} usuário(s) criado(s)${data.ignorados ? `, ${data.ignorados} já existiam (ignorados)` : ''}.</div>` + listaErros(data.erros) +
+        (data.criados.length ? `<button class="btn ok full" id="imCod">Baixar planilha com os códigos</button>` : '');
+      if (data.criados.length) { $('#imCod').onclick = () => baixarCodigos(data.criados, true); baixarCodigos(data.criados, true); }
+    });
+}
+
+async function baixarCodigos(lista, semModal){
+  const url = location.origin + location.pathname;
+  const papel = { usuario: 'Motorista', gestor: 'Gestor', portaria: 'Portaria' };
+  await baixarXLSX(`codigos-acesso-${toDateInput(new Date())}.xlsx`, [['Códigos', lista.map(c => ({ Nome: c.nome, 'Usuário': c.usuario, Papel: papel[c.papel] || c.papel, 'Código': c.codigo,
+    'Mensagem': `Acesso ao sistema de reserva de veículos: ${url} - toque em "Ativar conta". Usuário: ${c.usuario} - Código: ${c.codigo} (válido por 7 dias)` })), [28,20,12,10,90]]]);
+  if (!semModal) modal(`<h2>Códigos gerados</h2><p>Baixei a planilha com ${lista.length} código(s). Eles valem por 7 dias.</p><p class="hint">A coluna "Mensagem" já está pronta para copiar e mandar pelo WhatsApp.</p><button class="btn full" onclick="closeModal();vUsuarios()">Ok</button>`);
+}
+
+// ===== Relatórios =====
+async function vRelatorios(){
+  const hoje = new Date(), de = new Date(hoje.getTime() - 29*864e5);
+  $('#main').innerHTML = `<div class="card"><h2>Relatórios</h2>
+    <div class="toolbar"><div><label>De</label><input type="date" id="rDe" value="${toDateInput(de)}"></div>
+    <div><label>Até</label><input type="date" id="rAte" value="${toDateInput(hoje)}"></div>
+    <button class="btn" id="rGo">Gerar</button><button class="btn sec" id="rXls">Exportar Excel</button></div>
+    <div id="rMsg"></div><div class="stat" id="rStat"></div></div>
+    <div class="card"><h2>Por veículo</h2><p class="hint" style="margin-top:0">"Dias com uso" = em quantos dias do período o carro teve pelo menos uma reserva. Carros com pouco uso são candidatos a sair da frota.</p><div class="tbl" id="rV"></div></div>
+    <div class="card"><h2>Por motorista</h2><div class="tbl" id="rU"></div></div>`;
+  let cache = null;
+  const gerar = async () => {
+    msg('#rMsg', '');
+    const a = new Date($('#rDe').value + 'T00:00'), b = new Date($('#rAte').value + 'T23:59:59.999');
+    if (isNaN(a) || isNaN(b) || b < a) return msg('#rMsg', 'Período inválido');
+    const dias = Math.round((b - a) / 864e5);
+    const { data, error } = await sb.from('reservas').select(RES_SEL).lt('inicio', b.toISOString()).gt('fim', a.toISOString()).limit(10000);
+    if (error) return msg('#rMsg', errText(error));
+    const validas = data.filter(r => ['reservada','em_uso','concluida'].includes(r.status));
+    const kmR = r => r.status === 'concluida' && r.km_retorno != null ? r.km_retorno - r.km_saida : 0;
+    const horasNo = r => Math.max(0, (Math.min(+new Date(r.fim), +b) - Math.max(+new Date(r.inicio), +a)) / 36e5);
+    const diasUso = rs => { const s = new Set(); rs.forEach(r => { let d = new Date(Math.max(+new Date(r.inicio), +a)); d.setHours(0,0,0,0); const fim = Math.min(+new Date(r.fim), +b); while (+d < fim) { s.add(toDateInput(d)); d = new Date(d.getTime() + 864e5); } }); return s.size; };
+    const porV = VEIC.filter(v => v.ativo || data.some(r => r.veiculo_id === v.id)).map(v => {
+      const rs = validas.filter(r => r.veiculo_id === v.id);
+      return { v, n: rs.length, horas: rs.reduce((s, r) => s + horasNo(r), 0), km: rs.reduce((s, r) => s + kmR(r), 0), dias: diasUso(rs) };
+    }).sort((x, y) => y.dias - x.dias || y.horas - x.horas);
+    const users = {};
+    data.forEach(r => { const u = users[r.usuario_id] ||= { nome: r.usuario?.nome || '?', n: 0, conc: 0, ns: 0, canc: 0, km: 0 };
+      if (['reservada','em_uso','concluida'].includes(r.status)) u.n++; if (r.status === 'concluida') u.conc++; if (r.status === 'no_show') u.ns++; if (r.status === 'cancelada') u.canc++; u.km += kmR(r); });
+    const porU = Object.values(users).sort((x, y) => y.n - x.n);
+    const ns = data.filter(r => r.status === 'no_show').length;
+    const kmT = porV.reduce((s, x) => s + x.km, 0);
+    const ativos = porV.filter(x => x.v.ativo);
+    const ocupMedia = ativos.length ? ativos.reduce((s, x) => s + x.dias, 0) / (ativos.length * dias) * 100 : 0;
+    const parados = ativos.filter(x => x.dias === 0).length;
+    $('#rStat').innerHTML = `<div><b>${validas.length}</b><span>Reservas</span></div>
+      <div><b>${num(kmT)}</b><span>KM rodados</span></div>
+      <div><b>${ocupMedia.toFixed(0)}%</b><span>Uso médio da frota (dias)</span></div>
+      <div><b style="color:${parados?'var(--warn)':'inherit'}">${parados}</b><span>Carros sem nenhum uso</span></div>
+      <div><b style="color:${ns?'var(--err)':'inherit'}">${ns}</b><span>Não retiradas${data.length ? ` (${(ns / Math.max(1, validas.length + ns) * 100).toFixed(0)}%)` : ''}</span></div>`;
+    $('#rV').innerHTML = porV.length ? `<table class="rel"><thead><tr><th>Veículo</th><th>Reservas</th><th>Horas reservadas</th><th>KM rodados</th><th>Dias com uso</th><th></th></tr></thead><tbody>${
+      porV.map(x => `<tr><td><b>${esc(x.v.modelo)}</b> · ${esc(x.v.placa)}${x.v.ativo ? '' : ' <span class="tag">inativo</span>'}</td><td>${x.n}</td><td>${num(Math.round(x.horas))}</td><td>${num(x.km)}</td><td>${x.dias} de ${dias}</td><td><div class="bar"><i style="width:${Math.min(100, x.dias / dias * 100)}%"></i></div></td></tr>`).join('')}</tbody></table>` : '<div class="empty">Sem veículos</div>';
+    $('#rU').innerHTML = porU.length ? `<table class="rel"><thead><tr><th>Motorista</th><th>Reservas</th><th>Concluídas</th><th>Não retiradas</th><th>Canceladas</th><th>KM rodados</th></tr></thead><tbody>${
+      porU.map(u => `<tr><td>${esc(u.nome)}</td><td>${u.n}</td><td>${u.conc}</td><td style="${u.ns ? 'color:var(--err);font-weight:700' : ''}">${u.ns}</td><td>${u.canc}</td><td>${num(u.km)}</td></tr>`).join('')}</tbody></table>` : '<div class="empty">Nenhuma reserva no período</div>';
+    cache = { porV, porU, data, dias };
+  };
+  $('#rGo').onclick = gerar;
+  $('#rXls').onclick = async () => {
+    if (!cache) await gerar(); if (!cache) return;
+    const st = { reservada: 'Reservada', em_uso: 'Em uso', concluida: 'Concluída', cancelada: 'Cancelada', no_show: 'Não retirada' };
+    await baixarXLSX(`relatorio-reservas-${$('#rDe').value}-a-${$('#rAte').value}.xlsx`, [
+      ['Por veículo', cache.porV.map(x => ({ Placa: x.v.placa, Modelo: x.v.modelo, Categoria: x.v.categoria?.nome || '', Reservas: x.n, 'Horas reservadas': Math.round(x.horas), 'KM rodados': x.km, 'Dias com uso': x.dias, 'Dias no período': cache.dias })), [10,22,14,10,16,12,13,15]],
+      ['Por motorista', cache.porU.map(u => ({ Motorista: u.nome, Reservas: u.n, 'Concluídas': u.conc, 'Não retiradas': u.ns, Canceladas: u.canc, 'KM rodados': u.km })), [28,10,11,13,11,11]],
+      ['Reservas', cache.data.map(r => ({ 'Início': fmtXls(r.inicio), Fim: fmtXls(r.fim), Motorista: r.usuario?.nome, Placa: r.veiculo?.placa, Modelo: r.veiculo?.modelo, Status: st[r.status], Destino: r.destino || '', 'KM saída': r.km_saida ?? '', 'KM volta': r.km_retorno ?? '', 'KM rodados': r.km_retorno != null ? r.km_retorno - r.km_saida : '', 'Retirada em': r.retirada_em ? fmtXls(r.retirada_em) : '', 'Devolvida em': r.devolvida_em ? fmtXls(r.devolvida_em) : '', Obs: r.obs_devolucao || r.motivo_cancelamento || '' })), [16,16,24,10,18,13,20,9,9,10,16,16,30]]
+    ]);
+  };
+  gerar();
+}
+const fmtXls = iso => { const d = new Date(iso); return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+
+// ===== PWA =====
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
 boot();
 </script>
