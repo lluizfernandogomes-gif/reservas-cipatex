@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f3d5e">
+<title>Reserva de Veículos</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#f3f5f8;--card:#fff;--tx:#14202b;--mut:#5d6b78;--ln:#dde3ea;--pri:#0f3d5e;--pri2:#1b6aa0;--ok:#1d8a4e;--warn:#b7791f;--err:#c0392b;--r:12px}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--tx);font-size:15px}
+button,input,select,textarea{font:inherit}
+.hide{display:none!important}
+header{background:var(--pri);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:5}
+header h1{font-size:17px;margin:0;flex:1}
+header .who{font-size:13px;opacity:.85}
+nav{display:flex;gap:4px;overflow-x:auto;background:#fff;border-bottom:1px solid var(--ln);padding:0 8px;position:sticky;top:48px;z-index:4}
+nav button{border:0;background:none;padding:12px 12px;color:var(--mut);border-bottom:3px solid transparent;white-space:nowrap;cursor:pointer}
+nav button.on{color:var(--pri);border-color:var(--pri);font-weight:600}
+main{max-width:980px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:var(--r);padding:16px;margin-bottom:12px}
+.card h2{font-size:16px;margin:0 0 12px}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--ln);border-radius:8px;background:#fff;color:var(--tx)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--pri2);outline-offset:-1px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{border:0;border-radius:8px;padding:10px 16px;background:var(--pri);color:#fff;cursor:pointer;font-weight:600}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.sec{background:#e8eef4;color:var(--pri)}
+.btn.ok{background:var(--ok)}.btn.err{background:var(--err)}
+.btn.sm{padding:6px 10px;font-size:13px}
+.btn.full{width:100%;margin-top:14px}
+.link{background:none;border:0;color:var(--pri2);cursor:pointer;padding:0;text-decoration:underline}
+.msg{padding:10px 12px;border-radius:8px;margin:10px 0;font-size:14px}
+.msg.err{background:#fdecea;color:var(--err)}.msg.ok{background:#e6f4ec;color:var(--ok)}.msg.info{background:#eaf2f9;color:var(--pri)}
+.list{display:flex;flex-direction:column;gap:8px}
+.item{border:1px solid var(--ln);border-radius:10px;padding:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#fff}
+.item .grow{flex:1;min-width:180px}
+.item .t{font-weight:600}.item .s{font-size:13px;color:var(--mut);margin-top:2px}
+.tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;background:#eef1f5;color:var(--mut);font-weight:600}
+.tag.reservada{background:#eaf2f9;color:var(--pri2)}.tag.em_uso{background:#fff4e0;color:var(--warn)}
+.tag.concluida{background:#e6f4ec;color:var(--ok)}.tag.cancelada,.tag.no_show{background:#f3e9e9;color:var(--err)}
+.tag.gestor{background:#efe8fa;color:#6b3fa0}.tag.pendente{background:#fff4e0;color:var(--warn)}
+.veic{cursor:pointer}.veic.sel{border-color:var(--pri2);outline:2px solid var(--pri2)}
+.veic.ocup{opacity:.45;cursor:not-allowed}
+.empty{color:var(--mut);text-align:center;padding:20px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-bottom:12px}
+.toolbar>*{flex:1;min-width:140px}
+.toolbar .btn{flex:0}
+/* agenda */
+.ag{overflow-x:auto}
+.ag-grid{min-width:720px}
+.ag-row{display:grid;grid-template-columns:140px 1fr;border-bottom:1px solid var(--ln);min-height:38px}
+.ag-row .nm{font-size:13px;padding:8px 6px;border-right:1px solid var(--ln)}
+.ag-row .nm small{display:block;color:var(--mut)}
+.ag-tl{position:relative;background:repeating-linear-gradient(90deg,transparent 0,transparent calc(100%/24 - 1px),#eef1f5 calc(100%/24 - 1px),#eef1f5 calc(100%/24))}
+.ag-bar{position:absolute;top:5px;bottom:5px;border-radius:6px;background:var(--pri2);color:#fff;font-size:11px;padding:2px 5px;overflow:hidden;white-space:nowrap}
+.ag-bar.em_uso{background:var(--warn)}
+.ag-head{display:grid;grid-template-columns:140px 1fr;font-size:11px;color:var(--mut)}
+.ag-hours{display:grid;grid-template-columns:repeat(24,1fr)}
+.ag-hours span{padding:4px 0 4px 2px;border-left:1px solid var(--ln)}
+/* modal */
+.mod{position:fixed;inset:0;background:rgba(10,20,30,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+.mod .card{width:100%;max-width:440px;max-height:90vh;overflow:auto;margin:0}
+.code{font-size:32px;letter-spacing:6px;font-weight:700;text-align:center;padding:12px;background:#eaf2f9;border-radius:10px;color:var(--pri);margin:10px 0}
+.auth{max-width:380px;margin:40px auto}
+.auth .logo{text-align:center;margin-bottom:16px}
+.auth .logo b{display:block;font-size:20px;color:var(--pri)}
+.auth .logo span{color:var(--mut);font-size:13px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:12px}
+.stat div{background:#fff;border:1px solid var(--ln);border-radius:10px;padding:10px}
+.stat b{display:block;font-size:22px}.stat span{font-size:12px;color:var(--mut)}
+@media(max-width:560px){.row{grid-template-columns:1fr}main{padding:12px}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<section id="vLogin" class="auth hide">
+  <div class="logo"><b>Reserva de Veículos</b><span id="lblEmpresa"></span></div>
+  <div class="card" id="boxLogin">
+    <h2>Entrar</h2>
+    <form id="fLogin">
+      <label>Usuário</label><input id="lUser" autocomplete="username" autocapitalize="none" required>
+      <label>Senha</label><input id="lPass" type="password" autocomplete="current-password" required>
+      <div id="lMsg"></div>
+      <button class="btn full">Entrar</button>
+    </form>
+    <p style="text-align:center;margin:14px 0 0;font-size:14px">Primeiro acesso ou senha redefinida? <button class="link" id="goAtivar">Ativar conta</button></p>
+  </div>
+  <div class="card hide" id="boxAtivar">
+    <h2>Ativar conta</h2>
+    <p style="font-size:14px;color:var(--mut);margin:0">Use o usuário e o código de 6 dígitos que o gestor te passou e crie sua senha.</p>
+    <form id="fAtivar">
+      <label>Usuário</label><input id="aUser" autocapitalize="none" required>
+      <label>Código</label><input id="aCod" inputmode="numeric" maxlength="6" required>
+      <label>Nova senha (mín. 6 caracteres)</label><input id="aPass" type="password" autocomplete="new-password" minlength="6" required>
+      <label>Repita a senha</label><input id="aPass2" type="password" autocomplete="new-password" minlength="6" required>
+      <div id="aMsg"></div>
+      <button class="btn full">Criar senha e entrar</button>
+    </form>
+    <p style="text-align:center;margin:14px 0 0"><button class="link" id="goLogin">Voltar para o login</button></p>
+  </div>
+</section>
+
+<!-- APP -->
+<section id="vApp" class="hide">
+  <header><h1>Reserva de Veículos</h1><span class="who" id="who"></span><button class="btn sm sec" id="btnSair">Sair</button></header>
+  <nav id="nav"></nav>
+  <main id="main"></main>
+</section>
+
+<div id="modal"></div>
+
+<script>
+// ===== Config =====
+const SUPABASE_URL = 'https://nqkwpgkeieunkaoffuku.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_9gGFFpRZF0KM2ZAGGH3NPQ_wz4hSkdT';
+const EMPRESA = (new URLSearchParams(location.search).get('e') || 'cipatex').toLowerCase();
+const DOMINIO = 'reservas.powertec.app';
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { db: { schema: 'reservas' } });
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const emailDe = u => `${u.trim().toLowerCase()}.${EMPRESA}@${DOMINIO}`;
+const STATUS = {reservada:'Reservada',em_uso:'Em uso',concluida:'Concluída',cancelada:'Cancelada',no_show:'Não retirada'};
+
+let ME = null, EMP = null, CATS = [], VEIC = [], TAB = null;
+
+// ===== Datas =====
+const pad = n => String(n).padStart(2,'0');
+const toLocalInput = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const toDateInput = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const fmt = iso => { const d = new Date(iso); return `${pad(d.getDate())}/${pad(d.getMonth()+1)} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const fmtPer = (a,b) => { const x=new Date(a), y=new Date(b); return x.toDateString()===y.toDateString() ? `${fmt(a)} – ${pad(y.getHours())}:${pad(y.getMinutes())}` : `${fmt(a)} → ${fmt(b)}`; };
+const nextHour = () => { const d = new Date(); d.setMinutes(0,0,0); d.setHours(d.getHours()+1); return d; };
+const num = n => Number(n||0).toLocaleString('pt-BR');
+
+function msg(el, text, kind='err'){ $(el).innerHTML = text ? `<div class="msg ${kind}">${esc(text)}</div>` : ''; }
+function errText(e){ return e?.message || e?.error_description || String(e); }
+function modal(html){ $('#modal').innerHTML = `<div class="mod"><div class="card">${html}</div></div>`; $('#modal .mod').onclick = e => { if (e.target.classList.contains('mod')) closeModal(); }; }
+function closeModal(){ $('#modal').innerHTML = ''; }
+
+// ===== Auth =====
+$('#lblEmpresa').textContent = EMPRESA.toUpperCase();
+$('#goAtivar').onclick = () => { $('#boxLogin').classList.add('hide'); $('#boxAtivar').classList.remove('hide'); $('#aUser').value = $('#lUser').value; };
+$('#goLogin').onclick = () => { $('#boxAtivar').classList.add('hide'); $('#boxLogin').classList.remove('hide'); };
+
+$('#fLogin').onsubmit = async e => {
+  e.preventDefault(); msg('#lMsg','');
+  const btn = e.submitter; btn.disabled = true;
+  const { error } = await sb.auth.signInWithPassword({ email: emailDe($('#lUser').value), password: $('#lPass').value });
+  btn.disabled = false;
+  if (error) return msg('#lMsg', error.message.includes('Invalid') ? 'Usuário ou senha incorretos' : errText(error));
+  boot();
+};
+
+$('#fAtivar').onsubmit = async e => {
+  e.preventDefault(); msg('#aMsg','');
+  if ($('#aPass').value !== $('#aPass2').value) return msg('#aMsg','As senhas não conferem');
+  const btn = e.submitter; btn.disabled = true;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/functions/v1/reservas-ativar`, {
+      method:'POST', headers:{ 'Content-Type':'application/json', apikey: SUPABASE_KEY },
+      body: JSON.stringify({ empresa: EMPRESA, usuario: $('#aUser').value.trim(), codigo: $('#aCod').value.trim(), senha: $('#aPass').value })
+    });
+    const j = await r.json();
+    if (!r.ok || j.erro) throw new Error(j.erro || 'Falha na ativação');
+    const { error } = await sb.auth.signInWithPassword({ email: j.email, password: $('#aPass').value });
+    if (error) throw error;
+    boot();
+  } catch (err) { msg('#aMsg', errText(err)); }
+  btn.disabled = false;
+};
+
+$('#btnSair').onclick = async () => { await sb.auth.signOut(); location.reload(); };
+
+async function boot(){
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { $('#vLogin').classList.remove('hide'); $('#vApp').classList.add('hide'); return; }
+  const { data, error } = await sb.from('usuarios').select('*').eq('auth_id', session.user.id).maybeSingle();
+  if (error || !data || !data.ativo) {
+    await sb.auth.signOut();
+    $('#vLogin').classList.remove('hide');
+    return msg('#lMsg', error ? errText(error) : 'Este acesso está desativado. Fale com o gestor.');
+  }
+  ME = data;
+  const [{ data: emp }] = await Promise.all([sb.from('empresas').select('*').single(), loadBase()]);
+  EMP = emp;
+  $('#vLogin').classList.add('hide'); $('#vApp').classList.remove('hide');
+  $('#who').textContent = ME.nome + (ME.papel === 'gestor' ? ' · gestor' : '');
+  const tabs = [['nova','Nova reserva'],['minhas','Minhas reservas'],['agenda','Agenda']];
+  if (ME.papel === 'gestor') tabs.push(['todas','Todas reservas'],['veiculos','Veículos'],['usuarios','Usuários'],['config','Configurações']);
+  $('#nav').innerHTML = tabs.map(([k,l]) => `<button data-t="${k}">${l}</button>`).join('');
+  $('#nav').onclick = e => { const t = e.target.dataset.t; if (t) go(t); };
+  go(TAB || 'minhas');
+}
+
+async function loadBase(){
+  const [c, v] = await Promise.all([
+    sb.from('categorias').select('*').order('nome'),
+    sb.from('veiculos').select('*, categoria:categorias(nome)').order('modelo')
+  ]);
+  CATS = c.data || []; VEIC = v.data || [];
+}
+
+function go(t){
+  TAB = t;
+  document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+  ({nova:vNova, minhas:vMinhas, agenda:vAgenda, todas:vTodas, veiculos:vVeiculos, usuarios:vUsuarios, config:vConfig})[t]();
+}
+
+const RES_SEL = '*, veiculo:veiculos(placa,modelo,km_atual), usuario:usuarios!reservas_usuario_id_fkey(nome,usuario)';
+
+// ===== Nova reserva =====
+function vNova(){
+  const cfg = EMP.config, ini = nextHour(), fim = new Date(ini.getTime() + 2*3600e3);
+  const maxIni = new Date(Date.now() + cfg.antecedencia_dias*864e5);
+  const gestor = ME.papel === 'gestor';
+  $('#main').innerHTML = `
+  <div class="card"><h2>Nova reserva</h2>
+    <div class="msg info">Máximo de ${+(cfg.max_horas/24).toFixed(1)} dias por reserva, com até ${cfg.antecedencia_dias} dias de antecedência. Se não retirar em ${cfg.noshow_min} min após o início, a reserva é liberada.${gestor?' Como gestor, você não tem esses limites.':''}</div>
+    <div class="row">
+      <div><label>Início</label><input type="datetime-local" id="nIni" step="900" value="${toLocalInput(ini)}" ${gestor?'':`max="${toLocalInput(maxIni)}"`}></div>
+      <div><label>Fim</label><input type="datetime-local" id="nFim" step="900" value="${toLocalInput(fim)}"></div>
+    </div>
+    <div class="row">
+      <div><label>Categoria</label><select id="nCat"><option value="">Todas</option>${CATS.filter(c=>c.ativo).map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join('')}</select></div>
+      <div><label>Destino / motivo</label><input id="nDest" placeholder="Opcional"></div>
+    </div>
+    ${gestor ? `<label>Reservar para</label><select id="nPara"><option value="">Eu mesmo</option></select>` : ''}
+    <div id="nMsg"></div>
+  </div>
+  <div class="card"><h2>Escolha o veículo</h2><div id="nVeic" class="list"></div>
+    <button class="btn full" id="nBtn" disabled>Confirmar reserva</button></div>`;
+  if (gestor) sb.from('usuarios').select('id,nome,usuario').eq('ativo',true).order('nome').then(({data}) => {
+    $('#nPara').innerHTML += (data||[]).filter(u=>u.id!==ME.id).map(u=>`<option value="${u.id}">${esc(u.nome)} (${esc(u.usuario)})</option>`).join('');
+  });
+  let sel = null;
+  const refresh = async () => {
+    sel = null; $('#nBtn').disabled = true; msg('#nMsg','');
+    const a = new Date($('#nIni').value), b = new Date($('#nFim').value);
+    if (isNaN(a) || isNaN(b) || b <= a) { $('#nVeic').innerHTML = '<div class="empty">Informe um período válido</div>'; return; }
+    const horas = (b - a)/36e5;
+    if (!gestor && horas > cfg.max_horas) msg('#nMsg', `Período de ${+(horas/24).toFixed(1)} dias passa do máximo permitido`);
+    const { data: oc } = await sb.from('reservas').select('veiculo_id,inicio,fim,usuario:usuarios!reservas_usuario_id_fkey(nome)')
+      .in('status',['reservada','em_uso']).lt('inicio', b.toISOString()).gt('fim', a.toISOString());
+    const ocup = {}; (oc||[]).forEach(r => ocup[r.veiculo_id] = r);
+    const cat = $('#nCat').value;
+    const lista = VEIC.filter(v => v.ativo && (!cat || v.categoria_id === cat));
+    lista.sort((x,y) => (!!ocup[x.id]) - (!!ocup[y.id]));
+    $('#nVeic').innerHTML = lista.length ? lista.map(v => {
+      const o = ocup[v.id];
+      return `<div class="item veic ${o?'ocup':''}" data-id="${v.id}">
+        <div class="grow"><div class="t">${esc(v.modelo)} · ${esc(v.placa)}</div>
+        <div class="s">${esc(v.categoria?.nome||'Sem categoria')}${v.descricao?' · '+esc(v.descricao):''}</div></div>
+        ${o ? `<span class="tag cancelada">Ocupado ${fmtPer(o.inicio,o.fim)}</span>` : '<span class="tag concluida">Livre</span>'}</div>`;
+    }).join('') : '<div class="empty">Nenhum veículo nessa categoria</div>';
+    $('#nVeic').querySelectorAll('.veic:not(.ocup)').forEach(el => el.onclick = () => {
+      $('#nVeic').querySelectorAll('.veic').forEach(x => x.classList.remove('sel'));
+      el.classList.add('sel'); sel = el.dataset.id; $('#nBtn').disabled = false;
+    });
+  };
+  ['#nIni','#nFim','#nCat'].forEach(s => $(s).onchange = refresh);
+  $('#nIni').addEventListener('change', () => {
+    const a = new Date($('#nIni').value), b = new Date($('#nFim').value);
+    if (!isNaN(a) && (isNaN(b) || b <= a)) { $('#nFim').value = toLocalInput(new Date(a.getTime()+2*3600e3)); refresh(); }
+  });
+  $('#nBtn').onclick = async () => {
+    $('#nBtn').disabled = true;
+    const { error } = await sb.rpc('criar_reserva', {
+      p_veiculo: sel, p_inicio: new Date($('#nIni').value).toISOString(), p_fim: new Date($('#nFim').value).toISOString(),
+      p_destino: $('#nDest').value || null, p_usuario: (gestor && $('#nPara').value) || null });
+    if (error) { msg('#nMsg', errText(error)); $('#nBtn').disabled = false; return; }
+    go('minhas'); setTimeout(() => msg('#mMsg','Reserva confirmada!','ok'), 50);
+  };
+  refresh();
+}
+
+// ===== Item de reserva com ações =====
+function resItem(r, opts={}){
+  const agora = Date.now(), ini = new Date(r.inicio).getTime(), ant = (EMP.config.retirada_antecipada_min||30)*6e4;
+  const podeRet = r.status === 'reservada' && agora >= ini - ant && agora < new Date(r.fim).getTime();
+  const atrasada = r.status === 'em_uso' && agora > new Date(r.fim).getTime();
+  const km = r.km_retorno != null ? ` · ${num(r.km_retorno - r.km_saida)} km rodados` : r.km_saida != null ? ` · saiu com ${num(r.km_saida)} km` : '';
+  return `<div class="item">
+    <div class="grow"><div class="t">${esc(r.veiculo?.modelo)} · ${esc(r.veiculo?.placa)}</div>
+      <div class="s">${fmtPer(r.inicio, r.fim)}${opts.quem ? ' · '+esc(r.usuario?.nome) : ''}${r.destino ? ' · '+esc(r.destino) : ''}${km}</div>
+      ${r.obs_devolucao ? `<div class="s">Obs: ${esc(r.obs_devolucao)}</div>` : ''}</div>
+    <span class="tag ${r.status}">${STATUS[r.status]}${atrasada?' · atrasada':''}</span>
+    ${podeRet ? `<button class="btn sm ok" data-a="ret" data-id="${r.id}">Retirar</button>` : ''}
+    ${r.status === 'em_uso' ? `<button class="btn sm" data-a="dev" data-id="${r.id}">Devolver</button>` : ''}
+    ${r.status === 'reservada' ? `<button class="btn sm sec" data-a="can" data-id="${r.id}">Cancelar</button>` : ''}
+  </div>`;
+}
+
+function bindAcoes(root, rows, reload){
+  root.onclick = e => {
+    const b = e.target.closest('button[data-a]'); if (!b) return;
+    const r = rows.find(x => x.id === b.dataset.id); if (!r) return;
+    if (b.dataset.a === 'can') return confirmar(`Cancelar a reserva do ${r.veiculo.modelo} em ${fmtPer(r.inicio,r.fim)}?`, async () => {
+      const { error } = await sb.rpc('cancelar_reserva', { p_id: r.id }); if (error) throw error; reload(); });
+    if (b.dataset.a === 'ret') return pedirKm('Retirada', `${r.veiculo.modelo} · ${r.veiculo.placa}`, `Último KM registrado: ${num(r.veiculo.km_atual)}`, r.veiculo.km_atual, false,
+      async (km) => { const { error } = await sb.rpc('retirar', { p_id: r.id, p_km: km }); if (error) throw error; reload(); });
+    if (b.dataset.a === 'dev') return pedirKm('Devolução', `${r.veiculo.modelo} · ${r.veiculo.placa}`, `KM de saída: ${num(r.km_saida)}`, '', true,
+      async (km, obs) => { const { error } = await sb.rpc('devolver', { p_id: r.id, p_km: km, p_obs: obs }); if (error) throw error; reload(); });
+  };
+}
+
+function confirmar(texto, fn){
+  modal(`<h2>Confirmar</h2><p>${esc(texto)}</p><div id="cMsg"></div>
+    <div class="row"><button class="btn sec" id="cNo">Voltar</button><button class="btn err" id="cYes">Confirmar</button></div>`);
+  $('#cNo').onclick = closeModal;
+  $('#cYes').onclick = async () => { $('#cYes').disabled = true; try { await fn(); closeModal(); } catch (e) { msg('#cMsg', errText(e)); $('#cYes').disabled = false; } };
+}
+
+function pedirKm(titulo, veic, dica, valor, comObs, fn){
+  modal(`<h2>${titulo}</h2><p style="margin:0"><b>${esc(veic)}</b></p><p class="s" style="color:var(--mut);margin:4px 0 0">${esc(dica)}</p>
+    <label>KM do painel</label><input id="kKm" type="number" inputmode="numeric" min="0" value="${valor}">
+    ${comObs ? `<label>Observação (opcional)</label><textarea id="kObs" rows="2" placeholder="Algum problema com o veículo?"></textarea>` : ''}
+    <div id="kMsg"></div>
+    <div class="row" style="margin-top:12px"><button class="btn sec" id="kNo">Voltar</button><button class="btn ok" id="kYes">Confirmar</button></div>`);
+  $('#kKm').focus();
+  $('#kNo').onclick = closeModal;
+  $('#kYes').onclick = async () => {
+    const km = parseInt($('#kKm').value, 10);
+    if (isNaN(km)) return msg('#kMsg','Informe o KM');
+    $('#kYes').disabled = true;
+    try { await fn(km, comObs ? $('#kObs').value : null); closeModal(); }
+    catch (e) { msg('#kMsg', errText(e)); $('#kYes').disabled = false; }
+  };
+}
+
+// ===== Minhas reservas =====
+async function vMinhas(){
+  $('#main').innerHTML = `<div id="mMsg"></div>
+    <div class="card"><h2>Próximas e em uso</h2><div id="mAt" class="list"><div class="empty">Carregando…</div></div></div>
+    <div class="card"><h2>Histórico</h2><div id="mHist" class="list"></div></div>`;
+  const { data, error } = await sb.from('reservas').select(RES_SEL).eq('usuario_id', ME.id).order('inicio', { ascending: true }).limit(300);
+  if (error) return msg('#mMsg', errText(error));
+  const at = data.filter(r => ['reservada','em_uso'].includes(r.status));
+  const hist = data.filter(r => !['reservada','em_uso'].includes(r.status)).reverse().slice(0, 30);
+  $('#mAt').innerHTML = at.length ? at.map(r => resItem(r)).join('') : '<div class="empty">Nenhuma reserva ativa. <button class="link" onclick="go(\'nova\')">Fazer uma reserva</button></div>';
+  $('#mHist').innerHTML = hist.length ? hist.map(r => resItem(r)).join('') : '<div class="empty">Sem histórico ainda</div>';
+  bindAcoes($('#mAt'), at, vMinhas);
+}
+
+// ===== Agenda =====
+async function vAgenda(){
+  const dia = window._agDia || toDateInput(new Date());
+  $('#main').innerHTML = `<div class="card">
+    <div class="toolbar">
+      <div><label>Dia</label><input type="date" id="agD" value="${dia}"></div>
+      <div><label>Categoria</label><select id="agC"><option value="">Todas</option>${CATS.map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join('')}</select></div>
+      <button class="btn sec" id="agP">‹</button><button class="btn sec" id="agN">›</button>
+    </div>
+    <div class="ag"><div class="ag-grid" id="agG"><div class="empty">Carregando…</div></div></div></div>`;
+  const shift = d => { const x = new Date($('#agD').value+'T12:00'); x.setDate(x.getDate()+d); window._agDia = toDateInput(x); vAgenda(); };
+  $('#agP').onclick = () => shift(-1); $('#agN').onclick = () => shift(1);
+  $('#agD').onchange = () => { window._agDia = $('#agD').value; vAgenda(); };
+  const draw = async () => {
+    const a = new Date($('#agD').value+'T00:00'), b = new Date(a.getTime() + 864e5);
+    const { data } = await sb.from('reservas').select(RES_SEL).in('status',['reservada','em_uso']).lt('inicio', b.toISOString()).gt('fim', a.toISOString());
+    const cat = $('#agC').value;
+    const vs = VEIC.filter(v => v.ativo && (!cat || v.categoria_id === cat));
+    const por = {}; (data||[]).forEach(r => (por[r.veiculo_id] ||= []).push(r));
+    $('#agG').innerHTML = `<div class="ag-head"><div></div><div class="ag-hours">${Array.from({length:24},(_,h)=>`<span>${h}</span>`).join('')}</div></div>` +
+      (vs.length ? vs.map(v => `<div class="ag-row"><div class="nm">${esc(v.modelo)}<small>${esc(v.placa)}</small></div><div class="ag-tl">${
+        (por[v.id]||[]).map(r => {
+          const s = Math.max(0, (new Date(r.inicio) - a)/864e5), e = Math.min(1, (new Date(r.fim) - a)/864e5);
+          return `<div class="ag-bar ${r.status}" style="left:${s*100}%;width:${(e-s)*100}%" title="${esc(r.usuario?.nome)} · ${fmtPer(r.inicio,r.fim)}">${esc(r.usuario?.nome?.split(' ')[0])}</div>`;
+        }).join('')}</div></div>`).join('') : '<div class="empty">Nenhum veículo</div>');
+  };
+  $('#agC').onchange = draw; draw();
+}
+
+// ===== Todas reservas (gestor) =====
+async function vTodas(){
+  $('#main').innerHTML = `<div id="tMsg"></div><div class="card">
+    <div class="toolbar">
+      <div><label>Status</label><select id="tS"><option value="ativas">Ativas (reservadas e em uso)</option><option value="em_uso">Em uso</option><option value="atrasadas">Devolução atrasada</option><option value="todas">Todas</option><option value="no_show">Não retiradas</option></select></div>
+      <div><label>Buscar</label><input id="tQ" placeholder="Placa, modelo ou nome"></div>
+    </div>
+    <div class="stat" id="tStat"></div>
+    <div id="tL" class="list"><div class="empty">Carregando…</div></div></div>`;
+  const load = async () => {
+    const s = $('#tS').value;
+    let q = sb.from('reservas').select(RES_SEL).order('inicio', { ascending: s !== 'todas' && s !== 'no_show' }).limit(500);
+    if (s === 'ativas') q = q.in('status',['reservada','em_uso']);
+    else if (s === 'em_uso') q = q.eq('status','em_uso');
+    else if (s === 'atrasadas') q = q.eq('status','em_uso').lt('fim', new Date().toISOString());
+    else if (s === 'no_show') q = q.eq('status','no_show');
+    const { data, error } = await q; if (error) return msg('#tMsg', errText(error));
+    const t = $('#tQ').value.trim().toLowerCase();
+    const rows = t ? data.filter(r => [r.veiculo?.placa, r.veiculo?.modelo, r.usuario?.nome, r.usuario?.usuario].join(' ').toLowerCase().includes(t)) : data;
+    const emUso = VEIC.filter(v=>v.ativo).length;
+    $('#tL').innerHTML = rows.length ? rows.map(r => resItem(r, { quem: true })).join('') : '<div class="empty">Nada encontrado</div>';
+    bindAcoes($('#tL'), rows, load);
+  };
+  const { data: st } = await sb.from('reservas').select('status,fim').in('status',['reservada','em_uso']);
+  const agora = new Date();
+  $('#tStat').innerHTML = `<div><b>${VEIC.filter(v=>v.ativo).length}</b><span>Veículos ativos</span></div>
+    <div><b>${(st||[]).filter(r=>r.status==='em_uso').length}</b><span>Em uso agora</span></div>
+    <div><b>${(st||[]).filter(r=>r.status==='reservada').length}</b><span>Reservas futuras</span></div>
+    <div><b style="color:var(--err)">${(st||[]).filter(r=>r.status==='em_uso' && new Date(r.fim) < agora).length}</b><span>Devolução atrasada</span></div>`;
+  $('#tS').onchange = load; let tm; $('#tQ').oninput = () => { clearTimeout(tm); tm = setTimeout(load, 250); };
+  load();
+}
+
+// ===== Veículos e categorias (gestor) =====
+async function vVeiculos(){
+  await loadBase();
+  $('#main').innerHTML = `
+  <div class="card"><h2>Categorias</h2>
+    <div class="toolbar"><div><input id="cNome" placeholder="Nova categoria (ex.: Utilitário)"></div><button class="btn" id="cAdd">Adicionar</button></div>
+    <div id="cMsg2"></div><div class="list" id="cL"></div></div>
+  <div class="card"><h2>Veículos (${VEIC.length})</h2>
+    <div class="toolbar"><div><input id="vQ" placeholder="Buscar placa ou modelo"></div><button class="btn" id="vAdd">+ Veículo</button></div>
+    <div class="list" id="vL"></div></div>`;
+  $('#cL').innerHTML = CATS.length ? CATS.map(c => `<div class="item"><div class="grow"><div class="t">${esc(c.nome)}</div>
+    <div class="s">${VEIC.filter(v=>v.categoria_id===c.id).length} veículo(s)</div></div>
+    ${c.ativo?'':'<span class="tag">Inativa</span>'}<button class="btn sm sec" data-c="${c.id}">Editar</button></div>`).join('') : '<div class="empty">Crie categorias como Passeio, Utilitário, Caminhonete…</div>';
+  $('#cAdd').onclick = async () => {
+    const nome = $('#cNome').value.trim(); if (!nome) return;
+    const { error } = await sb.from('categorias').insert({ nome });
+    if (error) return msg('#cMsg2', error.code === '23505' ? 'Essa categoria já existe' : errText(error));
+    vVeiculos();
+  };
+  $('#cL').onclick = e => { const id = e.target.dataset.c; if (!id) return; const c = CATS.find(x=>x.id===id);
+    modal(`<h2>Categoria</h2><label>Nome</label><input id="ecN" value="${esc(c.nome)}">
+      <label><input type="checkbox" id="ecA" style="width:auto" ${c.ativo?'checked':''}> Ativa</label><div id="ecM"></div>
+      <div class="row" style="margin-top:12px"><button class="btn sec" onclick="closeModal()">Voltar</button><button class="btn" id="ecS">Salvar</button></div>`);
+    $('#ecS').onclick = async () => { const { error } = await sb.from('categorias').update({ nome: $('#ecN').value.trim(), ativo: $('#ecA').checked }).eq('id', id);
+      if (error) return msg('#ecM', errText(error)); closeModal(); vVeiculos(); };
+  };
+  const drawV = () => {
+    const t = $('#vQ').value.trim().toLowerCase();
+    const vs = VEIC.filter(v => !t || (v.placa+' '+v.modelo).toLowerCase().includes(t));
+    $('#vL').innerHTML = vs.length ? vs.map(v => `<div class="item"><div class="grow"><div class="t">${esc(v.modelo)} · ${esc(v.placa)}</div>
+      <div class="s">${esc(v.categoria?.nome||'Sem categoria')} · ${num(v.km_atual)} km${v.descricao?' · '+esc(v.descricao):''}</div></div>
+      ${v.ativo?'':'<span class="tag cancelada">Inativo</span>'}<button class="btn sm sec" data-v="${v.id}">Editar</button></div>`).join('') : '<div class="empty">Nenhum veículo cadastrado</div>';
+  };
+  $('#vQ').oninput = drawV; drawV();
+  $('#vAdd').onclick = () => formVeiculo(null);
+  $('#vL').onclick = e => { const id = e.target.dataset.v; if (id) formVeiculo(VEIC.find(v=>v.id===id)); };
+}
+
+function formVeiculo(v){
+  modal(`<h2>${v?'Editar':'Novo'} veículo</h2>
+    <div class="row"><div><label>Placa</label><input id="fvP" value="${esc(v?.placa||'')}" style="text-transform:uppercase"></div>
+    <div><label>Modelo</label><input id="fvM" value="${esc(v?.modelo||'')}" placeholder="Ex.: Fiat Strada"></div></div>
+    <label>Categoria</label><select id="fvC"><option value="">Sem categoria</option>${CATS.map(c=>`<option value="${c.id}" ${v?.categoria_id===c.id?'selected':''}>${esc(c.nome)}</option>`).join('')}</select>
+    <label>Descrição (opcional)</label><input id="fvD" value="${esc(v?.descricao||'')}" placeholder="Cor, setor, observações">
+    <label>KM atual</label><input id="fvK" type="number" min="0" value="${v?.km_atual ?? 0}">
+    ${v ? `<p style="font-size:12px;color:var(--mut);margin:4px 0 0">Alterar o KM aqui fica registrado como ajuste manual.</p>
+    <label><input type="checkbox" id="fvA" style="width:auto" ${v.ativo?'checked':''}> Ativo (disponível para reserva)</label>` : ''}
+    <div id="fvMsg"></div>
+    <div class="row" style="margin-top:12px"><button class="btn sec" onclick="closeModal()">Voltar</button><button class="btn" id="fvS">Salvar</button></div>`);
+  $('#fvS').onclick = async () => {
+    const d = { placa: $('#fvP').value.trim().toUpperCase().replace(/\s/g,''), modelo: $('#fvM').value.trim(), categoria_id: $('#fvC').value || null,
+      descricao: $('#fvD').value.trim() || null, km_atual: parseInt($('#fvK').value,10) || 0 };
+    if (v) d.ativo = $('#fvA').checked;
+    if (d.placa.length < 7 || !d.modelo) return msg('#fvMsg','Informe placa e modelo');
+    const { error } = v ? await sb.from('veiculos').update(d).eq('id', v.id) : await sb.from('veiculos').insert(d);
+    if (error) return msg('#fvMsg', error.code === '23505' ? 'Já existe um veículo com essa placa' : errText(error));
+    closeModal(); vVeiculos();
+  };
+}
+
+// ===== Usuários (gestor) =====
+async function vUsuarios(){
+  $('#main').innerHTML = `<div class="card"><h2>Usuários</h2>
+    <div class="toolbar"><div><input id="uQ" placeholder="Buscar nome ou usuário"></div><button class="btn" id="uAdd">+ Usuário</button></div>
+    <div class="stat" id="uStat"></div><div class="list" id="uL"><div class="empty">Carregando…</div></div></div>`;
+  const { data } = await sb.from('usuarios').select('*').order('nome');
+  const us = data || [];
+  $('#uStat').innerHTML = `<div><b>${us.filter(u=>u.ativo).length}</b><span>Ativos</span></div><div><b>${us.filter(u=>u.status==='pendente'&&u.ativo).length}</b><span>Aguardando 1º acesso</span></div><div><b>${us.filter(u=>u.papel==='gestor').length}</b><span>Gestores</span></div>`;
+  const draw = () => {
+    const t = $('#uQ').value.trim().toLowerCase();
+    const l = us.filter(u => !t || (u.nome+' '+u.usuario).toLowerCase().includes(t));
+    $('#uL').innerHTML = l.map(u => `<div class="item"><div class="grow"><div class="t">${esc(u.nome)}</div><div class="s">${esc(u.usuario)}</div></div>
+      ${u.papel==='gestor'?'<span class="tag gestor">Gestor</span>':''}${u.status==='pendente'?'<span class="tag pendente">Pendente</span>':''}${u.ativo?'':'<span class="tag cancelada">Desativado</span>'}
+      <button class="btn sm sec" data-u="${u.id}">Editar</button></div>`).join('') || '<div class="empty">Nenhum usuário</div>';
+  };
+  $('#uQ').oninput = draw; draw();
+  $('#uAdd').onclick = () => formUsuario(null);
+  $('#uL').onclick = e => { const id = e.target.dataset.u; if (id) formUsuario(us.find(u=>u.id===id)); };
+}
+
+function mostrarCodigo(nome, usuario, codigo){
+  const url = location.origin + location.pathname + (EMPRESA !== 'cipatex' ? `?e=${EMPRESA}` : '');
+  modal(`<h2>Código de acesso</h2><p style="margin:0">Passe para <b>${esc(nome)}</b>:</p>
+    <div class="code">${esc(codigo)}</div>
+    <p style="font-size:14px">Acesse <b>${esc(url)}</b>, toque em <b>Ativar conta</b> e informe o usuário <b>${esc(usuario)}</b>, o código acima e a senha que quiser.</p>
+    <p style="font-size:13px;color:var(--mut)">Vale por 7 dias. Este código não aparece de novo; se perder, gere outro em "Redefinir senha".</p>
+    <button class="btn full" id="mcCopy">Copiar mensagem</button><button class="btn sec full" onclick="closeModal();vUsuarios()">Fechar</button>`);
+  $('#mcCopy').onclick = () => { navigator.clipboard?.writeText(`Acesso ao sistema de reserva de veículos:\n${url}\nToque em "Ativar conta"\nUsuário: ${usuario}\nCódigo: ${codigo}\n(válido por 7 dias)`); $('#mcCopy').textContent = 'Copiado!'; };
+}
+
+function formUsuario(u){
+  const sugestao = n => n.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim().split(/\s+/).filter(Boolean).reduce((a,p,i,arr)=> i===0?p:(i===arr.length-1?a+'.'+p:a),'').replace(/[^a-z0-9._-]/g,'');
+  modal(`<h2>${u?'Editar':'Novo'} usuário</h2>
+    <label>Nome completo</label><input id="fuN" value="${esc(u?.nome||'')}">
+    <label>Usuário (login)</label><input id="fuU" value="${esc(u?.usuario||'')}" autocapitalize="none" ${u?.auth_id?'disabled':''} placeholder="ex.: joao.silva">
+    <label>Papel</label><select id="fuP"><option value="usuario">Usuário (motorista)</option><option value="gestor" ${u?.papel==='gestor'?'selected':''}>Gestor</option></select>
+    ${u ? `<label><input type="checkbox" id="fuA" style="width:auto" ${u.ativo?'checked':''}> Ativo</label>` : ''}
+    <div id="fuM"></div>
+    <div class="row" style="margin-top:12px"><button class="btn sec" onclick="closeModal()">Voltar</button><button class="btn" id="fuS">Salvar</button></div>
+    ${u && u.id !== ME.id ? `<button class="btn sec full" id="fuR">Redefinir senha (gerar novo código)</button>` : ''}`);
+  if (!u) $('#fuN').oninput = () => { if (!$('#fuU').dataset.edit) $('#fuU').value = sugestao($('#fuN').value); };
+  $('#fuU').oninput = () => $('#fuU').dataset.edit = '1';
+  $('#fuS').onclick = async () => {
+    const nome = $('#fuN').value.trim(), usuario = $('#fuU').value.trim().toLowerCase();
+    if (nome.length < 2) return msg('#fuM','Informe o nome');
+    $('#fuS').disabled = true;
+    const { data, error } = await sb.rpc('salvar_usuario', { p_id: u?.id || null, p_nome: nome, p_usuario: usuario, p_papel: $('#fuP').value, p_ativo: u ? $('#fuA').checked : true });
+    $('#fuS').disabled = false;
+    if (error) return msg('#fuM', errText(error));
+    if (!u && data?.codigo) return mostrarCodigo(nome, usuario, data.codigo);
+    closeModal(); vUsuarios();
+  };
+  if ($('#fuR')) $('#fuR').onclick = async () => {
+    const { data, error } = await sb.rpc('redefinir_senha', { p_id: u.id });
+    if (error) return msg('#fuM', errText(error));
+    mostrarCodigo(u.nome, u.usuario, data);
+  };
+}
+
+// ===== Configurações (gestor) =====
+function vConfig(){
+  const c = EMP.config;
+  $('#main').innerHTML = `<div class="card"><h2>Regras de reserva</h2>
+    <div class="row"><div><label>Duração máxima (horas)</label><input type="number" id="cfH" min="1" max="720" value="${c.max_horas}"></div>
+    <div><label>Antecedência máxima (dias)</label><input type="number" id="cfD" min="1" max="180" value="${c.antecedencia_dias}"></div></div>
+    <div class="row"><div><label>Liberar se não retirar em (min)</label><input type="number" id="cfN" min="10" max="1440" value="${c.noshow_min}"></div>
+    <div><label>Retirada pode começar antes (min)</label><input type="number" id="cfR" min="0" max="1440" value="${c.retirada_antecipada_min ?? 30}"></div></div>
+    <p style="font-size:13px;color:var(--mut)">Gestores não ficam presos a duração e antecedência.</p>
+    <div id="cfM"></div><button class="btn full" id="cfS">Salvar</button></div>`;
+  $('#cfS').onclick = async () => {
+    const { error } = await sb.rpc('salvar_config', { p_max_horas: +$('#cfH').value, p_antecedencia_dias: +$('#cfD').value, p_noshow_min: +$('#cfN').value, p_retirada_antecipada_min: +$('#cfR').value });
+    if (error) return msg('#cfM', errText(error));
+    const { data } = await sb.from('empresas').select('*').single(); EMP = data; msg('#cfM','Salvo','ok');
+  };
+}
+
+boot();
+</script>
+</body>
+</html>
