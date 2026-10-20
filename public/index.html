@@ -65,6 +65,13 @@ table.rel{width:100%;border-collapse:collapse;font-size:14px}table.rel th,table.
 table.rel th:first-child,table.rel td:first-child{text-align:left;white-space:normal}table.rel th{font-size:12px;color:var(--mut);font-weight:600}
 .bar{height:6px;border-radius:3px;background:#e6f3fa;overflow:hidden;min-width:60px}.bar i{display:block;height:100%;background:var(--pri2)}
 .tbl{overflow-x:auto}.hint{font-size:13px;color:var(--mut)}
+.subnav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}.subnav button{border:1px solid var(--ln);background:#fff;border-radius:99px;padding:7px 14px;cursor:pointer;color:var(--mut);font-weight:600}
+.subnav button.on{background:var(--navy);border-color:var(--navy);color:#fff}.subnav .n{display:inline-block;min-width:18px;padding:0 5px;margin-left:6px;border-radius:99px;background:var(--err);color:#fff;font-size:11px;line-height:18px}
+.tag.vencido{background:#fdecea;color:var(--err)}.tag.alerta{background:#fff4e0;color:var(--warn)}.tag.ok{background:#e6f4ec;color:var(--ok)}.tag.aberta{background:#eaf2f9;color:var(--pri2)}
+.item.vencido{border-left:4px solid var(--err)}.item.alerta{border-left:4px solid var(--warn)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}.chip{font-size:12px;padding:4px 10px;border-radius:99px;border:1px solid var(--ln);background:#fff;cursor:pointer}
+.chk{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--tx);margin:6px 0}.chk input{width:auto}
+nav .n{display:inline-block;min-width:18px;padding:0 5px;margin-left:5px;border-radius:99px;background:var(--err);color:#fff;font-size:11px;line-height:18px;font-weight:700}
 .drop{border:2px dashed var(--ln);border-radius:12px;padding:18px;text-align:center;color:var(--mut);cursor:pointer}.drop:hover{border-color:var(--pri2)}.tag.pendente{background:#fff4e0;color:var(--warn)}
 .veic{cursor:pointer}.veic.sel{border-color:var(--pri2);outline:2px solid var(--pri2)}
 .veic.ocup{opacity:.45;cursor:not-allowed}
@@ -95,7 +102,7 @@ table.rel th:first-child,table.rel td:first-child{text-align:left;white-space:no
 .stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:12px}
 .stat div{background:#fff;border:1px solid var(--ln);border-radius:10px;padding:10px}
 .stat b{display:block;font-size:22px}.stat span{font-size:12px;color:var(--mut)}
-@media(max-width:560px){.row{grid-template-columns:1fr}main{padding:12px}}
+@media(max-width:560px){.row{grid-template-columns:1fr}main{padding:12px}header .sep,header .ht{display:none}header .who{font-size:12px;text-align:right}}
 </style>
 </head>
 <body>
@@ -130,7 +137,7 @@ table.rel th:first-child,table.rel td:first-child{text-align:left;white-space:no
 
 <!-- APP -->
 <section id="vApp" class="hide">
-  <header><h1><i class="brand" role="img" aria-label="Cipatex"></i><span class="sep"></span>Reserva de Veículos</h1><span class="who" id="who"></span><button class="btn sm sec" id="btnSair">Sair</button></header>
+  <header><h1><i class="brand" role="img" aria-label="Cipatex"></i><span class="sep"></span><span class="ht">Reserva de Veículos</span></h1><span class="who" id="who"></span><button class="btn sm sec" id="btnSair">Sair</button></header>
   <nav id="nav"></nav>
   <main id="main"></main>
 </section>
@@ -214,12 +221,13 @@ async function boot(){
   $('#vLogin').classList.add('hide'); $('#vApp').classList.remove('hide');
   $('#who').textContent = ME.nome + ({gestor:' · gestor', portaria:' · portaria'}[ME.papel] || '');
   const tabs = ME.papel === 'portaria' ? [['portaria','Portaria'],['agenda','Agenda']]
-    : ME.papel === 'gestor' ? [['portaria','Portaria'],['nova','Nova reserva'],['minhas','Minhas reservas'],['agenda','Agenda'],['todas','Todas reservas'],['veiculos','Veículos'],['usuarios','Usuários'],['relatorios','Relatórios'],['config','Configurações']]
+    : ME.papel === 'gestor' ? [['portaria','Portaria'],['nova','Nova reserva'],['minhas','Minhas reservas'],['agenda','Agenda'],['todas','Todas reservas'],['veiculos','Veículos'],['manut','Manutenção'],['usuarios','Usuários'],['relatorios','Relatórios'],['config','Configurações']]
     : [['nova','Nova reserva'],['minhas','Minhas reservas'],['agenda','Agenda']];
   if (!tabs.some(t => t[0] === TAB)) TAB = null;
   $('#nav').innerHTML = tabs.map(([k,l]) => `<button data-t="${k}">${l}</button>`).join('');
   $('#nav').onclick = e => { const t = e.target.dataset.t; if (t) go(t); };
   go(TAB || (ME.papel === 'portaria' ? 'portaria' : 'minhas'));
+  if (ME.papel === 'gestor') atualizarBadgeManut();
 }
 
 async function loadBase(){
@@ -233,7 +241,7 @@ async function loadBase(){
 function go(t){
   TAB = t;
   document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
-  ({portaria:vPortaria, nova:vNova, minhas:vMinhas, agenda:vAgenda, todas:vTodas, veiculos:vVeiculos, usuarios:vUsuarios, relatorios:vRelatorios, config:vConfig})[t]();
+  ({portaria:vPortaria, nova:vNova, minhas:vMinhas, agenda:vAgenda, todas:vTodas, veiculos:vVeiculos, usuarios:vUsuarios, relatorios:vRelatorios, manut:vManut, config:vConfig})[t]();
 }
 
 const RES_SEL = '*, veiculo:veiculos(placa,modelo,km_atual), usuario:usuarios!reservas_usuario_id_fkey(nome,usuario)';
@@ -794,9 +802,12 @@ async function vRelatorios(){
     const kmR = r => r.status === 'concluida' && r.km_retorno != null ? r.km_retorno - r.km_saida : 0;
     const horasNo = r => Math.max(0, (Math.min(+new Date(r.fim), +b) - Math.max(+new Date(r.inicio), +a)) / 36e5);
     const diasUso = rs => { const s = new Set(); rs.forEach(r => { let d = new Date(Math.max(+new Date(r.inicio), +a)); d.setHours(0,0,0,0); const fim = Math.min(+new Date(r.fim), +b); while (+d < fim) { s.add(toDateInput(d)); d = new Date(d.getTime() + 864e5); } }); return s.size; };
-    const porV = VEIC.filter(v => v.ativo || data.some(r => r.veiculo_id === v.id)).map(v => {
+    const { data: oss } = await sb.from('manut_ordens').select('veiculo_id,valor_pecas,valor_mao_obra,data_conclusao').eq('status','concluida')
+      .gte('data_conclusao', $('#rDe').value).lte('data_conclusao', $('#rAte').value);
+    const custoV = {}; (oss||[]).forEach(o => custoV[o.veiculo_id] = (custoV[o.veiculo_id]||0) + (+o.valor_pecas||0) + (+o.valor_mao_obra||0));
+    const porV = VEIC.filter(v => v.ativo || data.some(r => r.veiculo_id === v.id) || custoV[v.id]).map(v => {
       const rs = validas.filter(r => r.veiculo_id === v.id);
-      return { v, n: rs.length, horas: rs.reduce((s, r) => s + horasNo(r), 0), km: rs.reduce((s, r) => s + kmR(r), 0), dias: diasUso(rs) };
+      return { v, n: rs.length, horas: rs.reduce((s, r) => s + horasNo(r), 0), km: rs.reduce((s, r) => s + kmR(r), 0), dias: diasUso(rs), custo: custoV[v.id] || 0 };
     }).sort((x, y) => y.dias - x.dias || y.horas - x.horas);
     const users = {};
     data.forEach(r => { const u = users[r.usuario_id] ||= { nome: r.usuario?.nome || '?', n: 0, conc: 0, ns: 0, canc: 0, km: 0 };
@@ -811,9 +822,10 @@ async function vRelatorios(){
       <div><b>${num(kmT)}</b><span>KM rodados</span></div>
       <div><b>${ocupMedia.toFixed(0)}%</b><span>Uso médio da frota (dias)</span></div>
       <div><b style="color:${parados?'var(--warn)':'inherit'}">${parados}</b><span>Carros sem nenhum uso</span></div>
+      <div><b>${brl(porV.reduce((s, x) => s + x.custo, 0))}</b><span>Custo de manutenção</span></div>
       <div><b style="color:${ns?'var(--err)':'inherit'}">${ns}</b><span>Não retiradas${data.length ? ` (${(ns / Math.max(1, validas.length + ns) * 100).toFixed(0)}%)` : ''}</span></div>`;
-    $('#rV').innerHTML = porV.length ? `<table class="rel"><thead><tr><th>Veículo</th><th>Reservas</th><th>Horas reservadas</th><th>KM rodados</th><th>Dias com uso</th><th></th></tr></thead><tbody>${
-      porV.map(x => `<tr><td><b>${esc(x.v.modelo)}</b> · ${esc(x.v.placa)}${x.v.ativo ? '' : ' <span class="tag">inativo</span>'}</td><td>${x.n}</td><td>${num(Math.round(x.horas))}</td><td>${num(x.km)}</td><td>${x.dias} de ${dias}</td><td><div class="bar"><i style="width:${Math.min(100, x.dias / dias * 100)}%"></i></div></td></tr>`).join('')}</tbody></table>` : '<div class="empty">Sem veículos</div>';
+    $('#rV').innerHTML = porV.length ? `<table class="rel"><thead><tr><th>Veículo</th><th>Reservas</th><th>Horas reservadas</th><th>KM rodados</th><th>Manutenção</th><th>Custo/km</th><th>Dias com uso</th><th></th></tr></thead><tbody>${
+      porV.map(x => `<tr><td><b>${esc(x.v.modelo)}</b> · ${esc(x.v.placa)}${x.v.ativo ? '' : ' <span class="tag">inativo</span>'}</td><td>${x.n}</td><td>${num(Math.round(x.horas))}</td><td>${num(x.km)}</td><td>${x.custo ? brl(x.custo) : '-'}</td><td>${x.custo && x.km ? brl(x.custo / x.km) : '-'}</td><td>${x.dias} de ${dias}</td><td><div class="bar"><i style="width:${Math.min(100, x.dias / dias * 100)}%"></i></div></td></tr>`).join('')}</tbody></table>` : '<div class="empty">Sem veículos</div>';
     $('#rU').innerHTML = porU.length ? `<table class="rel"><thead><tr><th>Motorista</th><th>Reservas</th><th>Concluídas</th><th>Não retiradas</th><th>Canceladas</th><th>KM rodados</th></tr></thead><tbody>${
       porU.map(u => `<tr><td>${esc(u.nome)}</td><td>${u.n}</td><td>${u.conc}</td><td style="${u.ns ? 'color:var(--err);font-weight:700' : ''}">${u.ns}</td><td>${u.canc}</td><td>${num(u.km)}</td></tr>`).join('')}</tbody></table>` : '<div class="empty">Nenhuma reserva no período</div>';
     cache = { porV, porU, data, dias };
@@ -823,7 +835,7 @@ async function vRelatorios(){
     if (!cache) await gerar(); if (!cache) return;
     const st = { reservada: 'Reservada', em_uso: 'Em uso', concluida: 'Concluída', cancelada: 'Cancelada', no_show: 'Não retirada' };
     await baixarXLSX(`relatorio-reservas-${$('#rDe').value}-a-${$('#rAte').value}.xlsx`, [
-      ['Por veículo', cache.porV.map(x => ({ Placa: x.v.placa, Modelo: x.v.modelo, Categoria: x.v.categoria?.nome || '', Reservas: x.n, 'Horas reservadas': Math.round(x.horas), 'KM rodados': x.km, 'Dias com uso': x.dias, 'Dias no período': cache.dias })), [10,22,14,10,16,12,13,15]],
+      ['Por veículo', cache.porV.map(x => ({ Placa: x.v.placa, Modelo: x.v.modelo, Categoria: x.v.categoria?.nome || '', Reservas: x.n, 'Horas reservadas': Math.round(x.horas), 'KM rodados': x.km, 'Custo manutenção (R$)': +x.custo.toFixed(2), 'Custo por km (R$)': x.km ? +(x.custo / x.km).toFixed(2) : '', 'Dias com uso': x.dias, 'Dias no período': cache.dias })), [10,22,14,10,16,12,20,17,13,15]],
       ['Por motorista', cache.porU.map(u => ({ Motorista: u.nome, Reservas: u.n, 'Concluídas': u.conc, 'Não retiradas': u.ns, Canceladas: u.canc, 'KM rodados': u.km })), [28,10,11,13,11,11]],
       ['Reservas', cache.data.map(r => ({ 'Início': fmtXls(r.inicio), Fim: fmtXls(r.fim), Motorista: r.usuario?.nome, Placa: r.veiculo?.placa, Modelo: r.veiculo?.modelo, Status: st[r.status], Destino: r.destino || '', 'KM saída': r.km_saida ?? '', 'KM volta': r.km_retorno ?? '', 'KM rodados': r.km_retorno != null ? r.km_retorno - r.km_saida : '', 'Retirada em': r.retirada_em ? fmtXls(r.retirada_em) : '', 'Devolvida em': r.devolvida_em ? fmtXls(r.devolvida_em) : '', Obs: r.obs_devolucao || r.motivo_cancelamento || '' })), [16,16,24,10,18,13,20,9,9,10,16,16,30]]
     ]);
@@ -831,6 +843,303 @@ async function vRelatorios(){
   gerar();
 }
 const fmtXls = iso => { const d = new Date(iso); return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+
+// ===== Manutenção (só gestor) =====
+const brl = v => (+v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const fmtD = d => d ? d.split('-').reverse().join('/') : '';
+const hojeISO = () => toDateInput(new Date());
+const diasAte = d => Math.round((new Date(d + 'T00:00') - new Date(hojeISO() + 'T00:00')) / 864e5);
+const SIT = { vencido: 'Vencido', alerta: 'Vence em breve', ok: 'Em dia' };
+const OS_ST = { aberta: 'Aberta', em_andamento: 'Em andamento', concluida: 'Concluída', cancelada: 'Cancelada' };
+const docSit = d => { const n = diasAte(d.vencimento); return n < 0 ? 'vencido' : n <= d.aviso_dias ? 'alerta' : 'ok'; };
+const vNome = id => { const v = VEIC.find(x => x.id === id); return v ? `${v.modelo} · ${v.placa}` : '?'; };
+const prazoTxt = s => [s.intervalo_km ? (s.faltam_km <= 0 ? `${num(-s.faltam_km)} km atrasado` : `faltam ${num(s.faltam_km)} km`) : null,
+                       s.intervalo_meses ? (s.faltam_dias < 0 ? `venceu há ${-s.faltam_dias} dia(s)` : `faltam ${s.faltam_dias} dia(s)`) : null].filter(Boolean).join(' · ');
+let MD = null;
+
+async function carregarManut(){
+  const [sit, ord, oco, doc, pla] = await Promise.all([
+    sb.rpc('manut_situacao'),
+    sb.from('manut_ordens').select('*').order('criado_em', { ascending: false }).limit(1000),
+    sb.from('ocorrencias').select('*').order('criado_em', { ascending: false }).limit(300),
+    sb.from('documentos').select('*').eq('ativo', true).order('vencimento'),
+    sb.from('manut_planos').select('*').order('nome')
+  ]);
+  const err = sit.error || ord.error || oco.error || doc.error || pla.error; if (err) throw err;
+  MD = { sit: sit.data, ord: ord.data, oco: oco.data, doc: doc.data, pla: pla.data };
+  return MD;
+}
+
+async function atualizarBadgeManut(){
+  try {
+    const d = await carregarManut();
+    const n = d.sit.filter(s => s.situacao === 'vencido').length + d.oco.filter(o => o.status === 'pendente').length + d.doc.filter(x => docSit(x) === 'vencido').length;
+    const b = document.querySelector('#nav button[data-t="manut"]');
+    if (b) b.innerHTML = 'Manutenção' + (n ? `<span class="n">${n}</span>` : '');
+  } catch (e) {}
+}
+
+async function vManut(sub){
+  window._mSub = sub || window._mSub || 'painel';
+  $('#main').innerHTML = `<div id="maMsg"></div><div class="subnav" id="maNav"></div><div id="maBody"><div class="empty">Carregando…</div></div>`;
+  try { await loadBase(); await carregarManut(); } catch (e) { return msg('#maMsg', errText(e)); }
+  const pend = MD.oco.filter(o => o.status === 'pendente').length;
+  const abertas = MD.ord.filter(o => ['aberta','em_andamento'].includes(o.status)).length;
+  $('#maNav').innerHTML = [['painel','Painel'],['ordens','Ordens de serviço', abertas],['planos','Planos preventivos'],['documentos','Documentos'],['ocorrencias','Ocorrências', pend]]
+    .map(([k, l, n]) => `<button data-s="${k}" class="${k === window._mSub ? 'on' : ''}">${l}${n ? `<span class="n">${n}</span>` : ''}</button>`).join('');
+  $('#maNav').onclick = e => { const b = e.target.closest('button[data-s]'); if (b) vManut(b.dataset.s); };
+  ({ painel: mPainel, ordens: mOrdens, planos: mPlanos, documentos: mDocs, ocorrencias: mOcorr })[window._mSub]();
+  atualizarBadgeManut();
+}
+
+function mPainel(){
+  const ini = hojeISO().slice(0, 8) + '01';
+  const custoMes = MD.ord.filter(o => o.status === 'concluida' && o.data_conclusao >= ini && !o.registro_anterior).reduce((s, o) => s + (+o.valor_pecas||0) + (+o.valor_mao_obra||0), 0);
+  const venc = MD.sit.filter(s => s.situacao === 'vencido'), alert = MD.sit.filter(s => s.situacao === 'alerta');
+  const docsV = MD.doc.filter(d => docSit(d) === 'vencido'), docsA = MD.doc.filter(d => docSit(d) === 'alerta');
+  const pend = MD.oco.filter(o => o.status === 'pendente');
+  const emOS = MD.ord.filter(o => ['aberta','em_andamento'].includes(o.status));
+  const estimados = MD.sit.filter(s => s.estimado).length;
+  const itens = [
+    ...venc.map(s => ({ c: 'vencido', t: `${s.plano}`, v: s.veiculo_id, s: prazoTxt(s) + (s.estimado ? ' · <i>estimado</i>' : ''), a: `<button class="btn sm" data-a="os" data-v="${s.veiculo_id}" data-p="${s.plano_id}">Abrir OS</button>${s.estimado ? `<button class="btn sm sec" data-a="ult" data-v="${s.veiculo_id}" data-p="${s.plano_id}">Informar último serviço</button>` : ''}` })),
+    ...docsV.map(d => ({ c: 'vencido', t: d.tipo + ' vencido', v: d.veiculo_id, s: `venceu em ${fmtD(d.vencimento)}`, a: `<button class="btn sm" data-a="ren" data-d="${d.id}">Renovar</button>` })),
+    ...pend.map(o => ({ c: 'alerta', t: 'Ocorrência: ' + o.descricao, v: o.veiculo_id, s: fmt(o.criado_em), a: `<button class="btn sm" data-a="oco" data-o="${o.id}">Abrir OS corretiva</button>` })),
+    ...alert.map(s => ({ c: 'alerta', t: s.plano, v: s.veiculo_id, s: prazoTxt(s) + (s.estimado ? ' · <i>estimado</i>' : ''), a: `<button class="btn sm sec" data-a="os" data-v="${s.veiculo_id}" data-p="${s.plano_id}">Abrir OS</button>${s.estimado ? `<button class="btn sm sec" data-a="ult" data-v="${s.veiculo_id}" data-p="${s.plano_id}">Informar último serviço</button>` : ''}` })),
+    ...docsA.map(d => ({ c: 'alerta', t: d.tipo, v: d.veiculo_id, s: `vence em ${fmtD(d.vencimento)} (${diasAte(d.vencimento)} dias)`, a: `<button class="btn sm sec" data-a="ren" data-d="${d.id}">Renovar</button>` })),
+  ];
+  $('#maBody').innerHTML = `<div class="stat">
+      <div><b style="color:${venc.length?'var(--err)':'inherit'}">${venc.length}</b><span>Preventivas vencidas</span></div>
+      <div><b style="color:${alert.length?'var(--warn)':'inherit'}">${alert.length}</b><span>Vencem em breve</span></div>
+      <div><b>${emOS.length}</b><span>OS abertas</span></div>
+      <div><b style="color:${pend.length?'var(--warn)':'inherit'}">${pend.length}</b><span>Ocorrências pendentes</span></div>
+      <div><b style="color:${docsV.length?'var(--err)':'inherit'}">${docsV.length + docsA.length}</b><span>Documentos vencidos/vencendo</span></div>
+      <div><b>${brl(custoMes)}</b><span>Custo no mês</span></div></div>
+    ${!MD.pla.length ? `<div class="msg info">Comece cadastrando os <b>planos preventivos</b> (ex.: troca de óleo a cada 10.000 km ou 6 meses). <button class="link" onclick="vManut('planos')">Cadastrar planos</button></div>` : ''}
+    ${estimados ? `<p class="hint">${estimados} item(ns) estão com prazo <i>estimado</i> (contando a partir do cadastro do plano, porque ainda não há serviço registrado). Use "Informar último serviço" quando souber a data e o KM reais.</p>` : ''}
+    <div class="card"><h2>Precisa de atenção</h2><div class="list" id="maAt">${itens.length ? itens.map(i => `<div class="item ${i.c}"><div class="grow"><div class="t">${esc(vNome(i.v))}</div><div class="s"><b>${esc(i.t)}</b> · ${i.s}</div></div>${i.a}</div>`).join('') : '<div class="empty">Tudo em dia 👍</div>'}</div></div>
+    <div class="card"><h2>Situação por veículo</h2><div class="toolbar"><div><input id="maQ" placeholder="Buscar placa ou modelo"></div><button class="btn" id="maNova">+ Nova OS</button><button class="btn sec" id="maOco">+ Ocorrência</button></div><div class="list" id="maV"></div></div>`;
+  const drawV = () => {
+    const t = $('#maQ').value.trim().toLowerCase();
+    const vs = VEIC.filter(v => v.ativo && (!t || (v.placa + ' ' + v.modelo).toLowerCase().includes(t)));
+    const ordem = { vencido: 0, alerta: 1, ok: 2 };
+    $('#maV').innerHTML = vs.length ? vs.map(v => {
+      const ss = MD.sit.filter(s => s.veiculo_id === v.id).sort((a, b) => ordem[a.situacao] - ordem[b.situacao]);
+      const os = MD.ord.find(o => o.veiculo_id === v.id && ['aberta','em_andamento'].includes(o.status));
+      return `<div class="item"><div class="grow"><div class="t">${esc(v.modelo)} · ${esc(v.placa)} <span class="hint">${num(v.km_atual)} km</span></div>
+        <div class="chips" style="margin-top:6px">${ss.map(s => `<span class="tag ${s.situacao}" title="${esc(prazoTxt(s))}">${esc(s.plano)}: ${s.situacao === 'ok' ? prazoTxt(s) : SIT[s.situacao]}</span>`).join('') || '<span class="hint">Nenhum plano se aplica</span>'}</div></div>
+        ${os ? `<span class="tag em_uso">Em manutenção (OS ${os.numero})</span>` : ''}</div>`;
+    }).join('') : '<div class="empty">Nenhum veículo</div>';
+  };
+  $('#maQ').oninput = drawV; drawV();
+  $('#maNova').onclick = () => formOrdem(null, {});
+  $('#maOco').onclick = formOcorrencia;
+  $('#maAt').onclick = e => {
+    const b = e.target.closest('button[data-a]'); if (!b) return;
+    if (b.dataset.a === 'os') formOrdem(null, { veiculo_id: b.dataset.v, tipo: 'preventiva', planos: [b.dataset.p], descricao: MD.pla.find(p => p.id === b.dataset.p)?.nome });
+    if (b.dataset.a === 'ult') formUltimo(b.dataset.v, b.dataset.p);
+    if (b.dataset.a === 'ren') formDoc(null, MD.doc.find(d => d.id === b.dataset.d));
+    if (b.dataset.a === 'oco') { const o = MD.oco.find(x => x.id === b.dataset.o); formOrdem(null, { veiculo_id: o.veiculo_id, tipo: 'corretiva', descricao: o.descricao, ocorrencia_id: o.id }); }
+  };
+}
+
+function formUltimo(vid, pid){
+  const v = VEIC.find(x => x.id === vid), p = MD.pla.find(x => x.id === pid);
+  modal(`<h2>Último serviço realizado</h2><p style="margin:0"><b>${esc(p.nome)}</b> · ${esc(v.modelo)} · ${esc(v.placa)}</p>
+    <p class="hint">Informe quando foi feito pela última vez. O próximo vencimento passa a contar daí.</p>
+    <div class="row"><div><label>Data</label><input type="date" id="fuD" max="${hojeISO()}"></div><div><label>KM na época</label><input type="number" id="fuK" min="0" inputmode="numeric"></div></div>
+    <div id="fuMsg"></div><div class="row" style="margin-top:12px"><button class="btn sec" onclick="closeModal()">Voltar</button><button class="btn" id="fuS">Salvar</button></div>`);
+  $('#fuS').onclick = async () => {
+    const { error } = await sb.rpc('registrar_servico_anterior', { p_veiculo: vid, p_plano: pid, p_data: $('#fuD').value || null, p_km: parseInt($('#fuK').value, 10) });
+    if (error) return msg('#fuMsg', errText(error)); closeModal(); vManut();
+  };
+}
+
+function formOcorrencia(){
+  modal(`<h2>Nova ocorrência</h2><label>Veículo</label><select id="foV"><option value="">Escolha…</option>${VEIC.filter(v => v.ativo).map(v => `<option value="${v.id}">${esc(v.modelo)} · ${esc(v.placa)}</option>`).join('')}</select>
+    <label>O que aconteceu?</label><textarea id="foD" rows="3" placeholder="Ex.: luz de injeção acesa, pneu careca"></textarea>
+    <div id="foMsg"></div><div class="row" style="margin-top:12px"><button class="btn sec" onclick="closeModal()">Voltar</button><button class="btn" id="foS">Registrar</button></div>`);
+  $('#foS').onclick = async () => {
+    const { error } = await sb.rpc('salvar_ocorrencia', { p_veiculo: $('#foV').value || null, p_descricao: $('#foD').value });
+    if (error) return msg('#foMsg', errText(error)); closeModal(); vManut('ocorrencias');
+  };
+}
+
+// ----- Ordens de serviço -----
+function mOrdens(){
+  $('#maBody').innerHTML = `<div class="card"><div class="toolbar">
+      <div style="flex:0 0 190px"><select id="moF"><option value="abertas">Abertas e em andamento</option><option value="concluida">Concluídas</option><option value="cancelada">Canceladas</option><option value="">Todas</option></select></div>
+      <div><input id="moQ" placeholder="Buscar placa, modelo, oficina ou descrição"></div><button class="btn" id="moN">+ Nova OS</button></div>
+    <div class="list" id="moL"></div></div>`;
+  const draw = () => {
+    const f = $('#moF').value, t = $('#moQ').value.trim().toLowerCase();
+    const l = MD.ord.filter(o => (f === 'abertas' ? ['aberta','em_andamento'].includes(o.status) : !f || o.status === f) && !o.registro_anterior
+      && (!t || [vNome(o.veiculo_id), o.oficina, o.descricao, o.numero].join(' ').toLowerCase().includes(t)));
+    $('#moL').innerHTML = l.length ? l.map(o => {
+      const tot = (+o.valor_pecas||0) + (+o.valor_mao_obra||0);
+      const atras = ['aberta','em_andamento'].includes(o.status) && o.previsao && diasAte(o.previsao) < 0;
+      return `<div class="item"><div class="grow"><div class="t">OS ${o.numero} · ${esc(vNome(o.veiculo_id))}</div>
+        <div class="s">${o.tipo === 'preventiva' ? 'Preventiva' : 'Corretiva'} · ${esc(o.descricao)}${o.oficina ? ' · ' + esc(o.oficina) : ''}</div>
+        <div class="s">Aberta ${fmtD(o.data_abertura)}${o.previsao && o.status !== 'concluida' ? ' · previsão ' + fmtD(o.previsao) : ''}${o.data_conclusao ? ' · concluída ' + fmtD(o.data_conclusao) : ''}${tot ? ' · ' + brl(tot) : ''}${o.bloqueio_id && ['aberta','em_andamento'].includes(o.status) ? ' · <b>veículo bloqueado</b>' : ''}</div>
+        ${atras ? '<div class="s" style="color:var(--err);font-weight:600">Previsão de liberação vencida</div>' : ''}</div>
+        <span class="tag ${o.status === 'aberta' ? 'aberta' : o.status}">${OS_ST[o.status]}</span><button class="btn sm sec" data-o="${o.id}">Abrir</button></div>`;
+    }).join('') : '<div class="empty">Nenhuma OS</div>';
+  };
+  $('#moF').onchange = draw; $('#moQ').oninput = draw; draw();
+  $('#moN').onclick = () => formOrdem(null, {});
+  $('#moL').onclick = e => { const id = e.target.dataset.o; if (id) formOrdem(MD.ord.find(o => o.id === id)); };
+}
+
+function formOrdem(o, pre = {}){
+  const d = o || { tipo: pre.tipo || 'corretiva', veiculo_id: pre.veiculo_id || '', descricao: pre.descricao || '', planos: pre.planos || [], data_abertura: hojeISO(), status: 'aberta', ocorrencia_id: pre.ocorrencia_id };
+  const fechada = o && ['concluida','cancelada'].includes(o.status);
+  const planosDo = vid => { const v = VEIC.find(x => x.id === vid); return MD.pla.filter(p => p.ativo && (p.veiculo_id === vid || (!p.veiculo_id && (!p.categoria_id || p.categoria_id === v?.categoria_id)))); };
+  modal(`<h2>${o ? `OS ${o.numero}` : 'Nova ordem de serviço'}</h2>
+    ${d.ocorrencia_id && !o ? `<div class="msg info">A partir da ocorrência: "${esc(pre.descricao)}"</div>` : ''}
+    <label>Veículo</label><select id="oV" ${o ? 'disabled' : ''}><option value="">Escolha…</option>${VEIC.filter(v => v.ativo || v.id === d.veiculo_id).map(v => `<option value="${v.id}" ${v.id === d.veiculo_id ? 'selected' : ''}>${esc(v.modelo)} · ${esc(v.placa)} (${num(v.km_atual)} km)</option>`).join('')}</select>
+    <label>Tipo</label><select id="oT"><option value="preventiva" ${d.tipo === 'preventiva' ? 'selected' : ''}>Preventiva</option><option value="corretiva" ${d.tipo === 'corretiva' ? 'selected' : ''}>Corretiva</option></select>
+    <div id="oPl"></div>
+    <label>Descrição</label><textarea id="oD" rows="2" placeholder="O que vai ser feito">${esc(d.descricao || '')}</textarea>
+    <div class="row"><div><label>Oficina / fornecedor</label><input id="oO" value="${esc(d.oficina || '')}"></div><div><label>Nº nota / orçamento</label><input id="oN" value="${esc(d.nota || '')}"></div></div>
+    <div class="row"><div><label>Abertura</label><input type="date" id="oA" value="${d.data_abertura}"></div><div><label>Previsão de liberação</label><input type="date" id="oP" value="${d.previsao || ''}"></div></div>
+    ${fechada ? '' : `<label class="chk"><input type="checkbox" id="oB" ${(!o || o.bloqueio_id) ? 'checked' : ''}> Bloquear o veículo para reservas até a previsão</label>`}
+    <div class="row"><div><label>Peças (R$)</label><input type="number" step="0.01" min="0" id="oVP" value="${d.valor_pecas ?? ''}"></div><div><label>Mão de obra (R$)</label><input type="number" step="0.01" min="0" id="oVM" value="${d.valor_mao_obra ?? ''}"></div></div>
+    ${o ? `<div class="row"><div><label>Status</label><select id="oS">${Object.entries(OS_ST).filter(([k]) => !fechada || ['concluida','cancelada'].includes(k)).map(([k, l]) => `<option value="${k}" ${k === o.status ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+      <div id="oKW"><label>KM na conclusão</label><input type="number" min="0" id="oK" value="${o.km ?? ''}"></div></div>
+      <div id="oCW"><label>Data de conclusão</label><input type="date" id="oC" value="${o.data_conclusao || hojeISO()}"></div>` : ''}
+    <div id="oMsg"></div>
+    <div class="row" style="margin-top:12px"><button class="btn sec" onclick="closeModal()">Voltar</button><button class="btn" id="oSv">Salvar</button></div>
+    ${o && !fechada ? `<button class="btn ok full" id="oFim">Concluir OS</button>` : ''}`);
+  const drawPl = () => {
+    const vid = $('#oV').value, tipo = $('#oT').value;
+    if (tipo !== 'preventiva' || !vid) return $('#oPl').innerHTML = '';
+    const ps = planosDo(vid), sel = new Set(d.planos || []);
+    $('#oPl').innerHTML = `<label>Itens do plano feitos nesta OS (zeram a contagem ao concluir)</label>${ps.length ? ps.map(p => `<label class="chk"><input type="checkbox" class="oPc" value="${p.id}" ${sel.has(p.id) ? 'checked' : ''}> ${esc(p.nome)}</label>`).join('') : '<p class="hint">Nenhum plano preventivo se aplica a este veículo.</p>'}`;
+  };
+  const drawSt = () => { if (!o) return; const c = $('#oS').value === 'concluida'; $('#oKW').style.display = c ? '' : 'none'; $('#oCW').style.display = c ? '' : 'none';
+    if (c && !$('#oK').value) $('#oK').value = VEIC.find(v => v.id === o.veiculo_id)?.km_atual ?? ''; };
+  $('#oV').onchange = drawPl; $('#oT').onchange = drawPl; drawPl();
+  if (o) { $('#oS').onchange = drawSt; drawSt(); }
+  const salvar = async (cancelar, status) => {
+    const payload = { id: o?.id, veiculo_id: $('#oV').value, tipo: $('#oT').value, descricao: $('#oD').value, oficina: $('#oO').value, nota: $('#oN').value,
+      data_abertura: $('#oA').value, previsao: $('#oP').value, valor_pecas: $('#oVP').value, valor_mao_obra: $('#oVM').value,
+      planos: [...document.querySelectorAll('.oPc:checked')].map(x => x.value), bloquear: $('#oB')?.checked || false, cancelar,
+      status: status || (o ? $('#oS').value : 'aberta'), km: o ? $('#oK').value : '', data_conclusao: o ? $('#oC').value : '', ocorrencia_id: d.ocorrencia_id };
+    if (payload.status === 'concluida' && !payload.km) { drawSt(); return msg('#oMsg', 'Informe o KM na conclusão'); }
+    $('#oSv').disabled = true;
+    const { data, error } = await sb.rpc('salvar_ordem', { p: payload });
+    $('#oSv').disabled = false;
+    if (error) {
+      const m = errText(error).match(/CONFLITO:(\d+)/);
+      if (m) {
+        $('#oMsg').innerHTML = `<div class="msg err">Existem <b>${m[1]}</b> reserva(s) para esse veículo até a previsão. Bloquear vai cancelá-las e os motoristas verão o motivo.</div><button class="btn err full" id="oConf">Bloquear e cancelar as reservas</button>`;
+        $('#oConf').onclick = () => salvar(true, status); return;
+      }
+      return msg('#oMsg', errText(error));
+    }
+    closeModal(); vManut(window._mSub === 'painel' || window._mSub === 'ocorrencias' ? window._mSub : 'ordens');
+  };
+  $('#oSv').onclick = () => salvar(false);
+  if ($('#oFim')) $('#oFim').onclick = () => { $('#oS').value = 'concluida'; drawSt(); $('#oK').focus(); msg('#oMsg', 'Confira o KM e a data de conclusão e clique em Salvar.', 'info'); };
+}
+
+// ----- Planos -----
+const SUGESTOES = [['Troca de óleo e filtro', 10000, 6], ['Filtro de ar', 20000, 12], ['Filtro de combustível', 20000, 12], ['Alinhamento e balanceamento', 10000, ''], ['Revisão geral', 20000, 12], ['Pastilhas de freio (inspeção)', 15000, ''], ['Correia dentada', 50000, 48], ['Fluido de freio', '', 24]];
+function mPlanos(){
+  const alvo = p => p.veiculo_id ? vNome(p.veiculo_id) : p.categoria_id ? 'Categoria: ' + (CATS.find(c => c.id === p.categoria_id)?.nome || '?') : 'Todos os veículos';
+  $('#maBody').innerHTML = `<div class="card"><h2>Planos preventivos</h2>
+    <p class="hint" style="margin-top:0">Cada plano vence pelo que chegar primeiro: KM ou tempo. Vale para todos os veículos, para uma categoria ou para um veículo específico.</p>
+    <div class="toolbar"><div></div><button class="btn" id="mpN">+ Novo plano</button></div>
+    <div class="list" id="mpL">${MD.pla.length ? MD.pla.map(p => {
+      const n = MD.sit.filter(s => s.plano_id === p.id), nv = n.filter(s => s.situacao === 'vencido').length;
+      return `<div class="item"><div class="grow"><div class="t">${esc(p.nome)}</div>
+        <div class="s">${[p.intervalo_km ? `a cada ${num(p.intervalo_km)} km` : '', p.intervalo_meses ? `a cada ${p.intervalo_meses} ${p.intervalo_meses > 1 ? 'meses' : 'mês'}` : ''].filter(Boolean).join(' ou ')} · ${esc(alvo(p))}</div>
+        <div class="s">Avisa ${p.intervalo_km ? `${num(p.aviso_km)} km` : ''}${p.intervalo_km && p.intervalo_meses ? ' ou ' : ''}${p.intervalo_meses ? `${p.aviso_dias} dias` : ''} antes · ${n.length} veículo(s)${nv ? ` · <b style="color:var(--err)">${nv} vencido(s)</b>` : ''}</div></div>
+        ${p.ativo ? '' : '<span class="tag">Inativo</span>'}<button class="btn sm sec" data-p="${p.id}">Editar</button></div>`; }).join('') : '<div class="empty">Nenhum plano ainda</div>'}</div></div>`;
+  $('#mpN').onclick = () => formPlano(null);
+  $('#mpL').onclick = e => { const id = e.target.dataset.p; if (id) formPlano(MD.pla.find(p => p.id === id)); };
+}
+
+function formPlano(p){
+  const alvo = p ? (p.veiculo_id ? 'v:' + p.veiculo_id : p.categoria_id ? 'c:' + p.categoria_id : '') : '';
+  modal(`<h2>${p ? 'Editar' : 'Novo'} plano preventivo</h2>
+    ${p ? '' : `<label>Sugestões</label><div class="chips">${SUGESTOES.map((s, i) => `<button class="chip" data-i="${i}">${s[0]}</button>`).join('')}</div>`}
+    <label>Item</label><input id="fpN" value="${esc(p?.nome || '')}" placeholder="Ex.: Troca de óleo e filtro">
+    <div class="row"><div><label>A cada (km)</label><input type="number" min="1" id="fpK" value="${p?.intervalo_km ?? ''}" placeholder="vazio = não controla por km"></div>
+    <div><label>A cada (meses)</label><input type="number" min="1" id="fpM" value="${p?.intervalo_meses ?? ''}" placeholder="vazio = não controla por tempo"></div></div>
+    <div class="row"><div><label>Avisar faltando (km)</label><input type="number" min="0" id="fpAK" value="${p?.aviso_km ?? 1000}"></div>
+    <div><label>Avisar faltando (dias)</label><input type="number" min="0" id="fpAD" value="${p?.aviso_dias ?? 15}"></div></div>
+    <label>Vale para</label><select id="fpA"><option value="">Todos os veículos</option>
+      <optgroup label="Categoria">${CATS.map(c => `<option value="c:${c.id}" ${alvo === 'c:' + c.id ? 'selected' : ''}>${esc(c.nome)}</option>`).join('')}</optgroup>
+      <optgroup label="Veículo específico">${VEIC.map(v => `<option value="v:${v.id}" ${alvo === 'v:' + v.id ? 'selected' : ''}>${esc(v.modelo)} · ${esc(v.placa)}</option>`).join('')}</optgroup></select>
+    ${p ? `<label class="chk"><input type="checkbox" id="fpAt" ${p.ativo ? 'checked' : ''}> Ativo</label>` : `<p class="hint">Sem histórico, a contagem começa hoje, com o KM atual de cada veículo. Depois você pode informar o último serviço real de cada um.</p>`}
+    <div id="fpMsg"></div><div class="row" style="margin-top:12px"><button class="btn sec" onclick="closeModal()">Voltar</button><button class="btn" id="fpS">Salvar</button></div>`);
+  document.querySelectorAll('.chip').forEach(c => c.onclick = () => { const s = SUGESTOES[c.dataset.i]; $('#fpN').value = s[0]; $('#fpK').value = s[1]; $('#fpM').value = s[2]; });
+  $('#fpS').onclick = async () => {
+    const a = $('#fpA').value;
+    const { error } = await sb.rpc('salvar_plano', { p: { id: p?.id, nome: $('#fpN').value, intervalo_km: $('#fpK').value, intervalo_meses: $('#fpM').value,
+      aviso_km: $('#fpAK').value, aviso_dias: $('#fpAD').value, categoria_id: a.startsWith('c:') ? a.slice(2) : '', veiculo_id: a.startsWith('v:') ? a.slice(2) : '', ativo: p ? $('#fpAt').checked : true } });
+    if (error) return msg('#fpMsg', errText(error)); closeModal(); vManut('planos');
+  };
+}
+
+// ----- Documentos -----
+const TIPOS_DOC = ['Licenciamento (CRLV)', 'Seguro', 'IPVA', 'Extintor', 'Tacógrafo', 'Inspeção veicular'];
+function mDocs(){
+  $('#maBody').innerHTML = `<div class="card"><h2>Documentos e vencimentos</h2>
+    <div class="toolbar"><div><input id="mdQ" placeholder="Buscar placa, modelo ou tipo"></div><button class="btn" id="mdN">+ Documento</button></div><div class="list" id="mdL"></div></div>`;
+  const draw = () => {
+    const t = $('#mdQ').value.trim().toLowerCase();
+    const l = MD.doc.filter(d => !t || (vNome(d.veiculo_id) + ' ' + d.tipo).toLowerCase().includes(t));
+    $('#mdL').innerHTML = l.length ? l.map(d => { const s = docSit(d), n = diasAte(d.vencimento);
+      return `<div class="item ${s === 'ok' ? '' : s}"><div class="grow"><div class="t">${esc(d.tipo)} · ${esc(vNome(d.veiculo_id))}</div>
+        <div class="s">Vence ${fmtD(d.vencimento)} (${n < 0 ? `vencido há ${-n} dia(s)` : `em ${n} dia(s)`})${d.valor ? ' · ' + brl(d.valor) : ''}${d.descricao ? ' · ' + esc(d.descricao) : ''}</div></div>
+        <span class="tag ${s}">${SIT[s]}</span><button class="btn sm" data-r="${d.id}">Renovar</button><button class="btn sm sec" data-e="${d.id}">Editar</button></div>`; }).join('') : '<div class="empty">Nenhum documento cadastrado</div>';
+  };
+  $('#mdQ').oninput = draw; draw();
+  $('#mdN').onclick = () => formDoc(null);
+  $('#mdL').onclick = e => { if (e.target.dataset.e) formDoc(MD.doc.find(d => d.id === e.target.dataset.e)); if (e.target.dataset.r) formDoc(null, MD.doc.find(d => d.id === e.target.dataset.r)); };
+}
+
+function formDoc(d, renova){
+  const base = d || renova || {};
+  let venc = d?.vencimento || '';
+  if (renova) { const x = new Date(renova.vencimento + 'T12:00'); x.setFullYear(x.getFullYear() + 1); venc = toDateInput(x); }
+  modal(`<h2>${renova ? 'Renovar documento' : d ? 'Editar documento' : 'Novo documento'}</h2>
+    ${renova ? `<p class="hint" style="margin-top:0">O documento atual (vence ${fmtD(renova.vencimento)}) fica no histórico e este passa a valer.</p>` : ''}
+    <label>Veículo</label><select id="fdV" ${d || renova ? 'disabled' : ''}><option value="">Escolha…</option>${VEIC.filter(v => v.ativo || v.id === base.veiculo_id).map(v => `<option value="${v.id}" ${v.id === base.veiculo_id ? 'selected' : ''}>${esc(v.modelo)} · ${esc(v.placa)}</option>`).join('')}</select>
+    <label>Tipo</label><input id="fdT" list="fdTL" value="${esc(base.tipo || '')}"><datalist id="fdTL">${TIPOS_DOC.map(t => `<option value="${t}">`).join('')}</datalist>
+    <div class="row"><div><label>Vencimento</label><input type="date" id="fdD" value="${venc}"></div><div><label>Valor (R$)</label><input type="number" step="0.01" min="0" id="fdVl" value="${d?.valor ?? ''}"></div></div>
+    <div class="row"><div><label>Avisar com (dias)</label><input type="number" min="0" id="fdA" value="${base.aviso_dias ?? 30}"></div><div><label>Observação</label><input id="fdO" value="${esc(d?.descricao || '')}" placeholder="Apólice, seguradora…"></div></div>
+    ${d ? `<label class="chk"><input type="checkbox" id="fdAt" checked> Ativo (desmarque para remover da lista)</label>` : ''}
+    <div id="fdMsg"></div><div class="row" style="margin-top:12px"><button class="btn sec" onclick="closeModal()">Voltar</button><button class="btn" id="fdS">Salvar</button></div>`);
+  $('#fdS').onclick = async () => {
+    const { error } = await sb.rpc('salvar_documento', { p: { id: d?.id, veiculo_id: $('#fdV').value, tipo: $('#fdT').value, vencimento: $('#fdD').value, valor: $('#fdVl').value,
+      aviso_dias: $('#fdA').value, descricao: $('#fdO').value, renova_id: renova?.id, ativo: d ? $('#fdAt').checked : true } });
+    if (error) return msg('#fdMsg', errText(error)); closeModal(); vManut(window._mSub === 'painel' ? 'painel' : 'documentos');
+  };
+}
+
+// ----- Ocorrências -----
+function mOcorr(){
+  const pend = MD.oco.filter(o => o.status === 'pendente'), res = MD.oco.filter(o => o.status !== 'pendente').slice(0, 50);
+  $('#maBody').innerHTML = `<div class="card"><h2>Ocorrências pendentes</h2>
+    <p class="hint" style="margin-top:0">Chegam sozinhas quando a portaria registra uma observação na devolução da chave.</p>
+    <div class="toolbar"><div></div><button class="btn sec" id="ocN">+ Ocorrência</button></div>
+    <div class="list" id="ocL">${pend.length ? pend.map(o => `<div class="item alerta"><div class="grow"><div class="t">${esc(vNome(o.veiculo_id))}</div>
+      <div class="s"><b>${esc(o.descricao)}</b> · ${fmt(o.criado_em)}${o.reserva_id ? ' · na devolução' : ''}</div></div>
+      <button class="btn sm" data-c="${o.id}">Abrir OS corretiva</button><button class="btn sm sec" data-d="${o.id}">Descartar</button></div>`).join('') : '<div class="empty">Nenhuma ocorrência pendente</div>'}</div></div>
+    <div class="card"><h2>Resolvidas recentemente</h2><div class="list">${res.length ? res.map(o => `<div class="item"><div class="grow"><div class="t">${esc(vNome(o.veiculo_id))}</div>
+      <div class="s">${esc(o.descricao)} · ${fmt(o.criado_em)}${o.resolucao ? ' · ' + esc(o.resolucao) : ''}</div></div>
+      <span class="tag ${o.status === 'convertida' ? 'concluida' : ''}">${o.status === 'convertida' ? 'Virou OS ' + (MD.ord.find(x => x.id === o.ordem_id)?.numero || '') : 'Descartada'}</span></div>`).join('') : '<div class="empty">Nada ainda</div>'}</div></div>`;
+  $('#ocN').onclick = formOcorrencia;
+  $('#ocL').onclick = e => {
+    const c = e.target.dataset.c, dd = e.target.dataset.d;
+    if (c) { const o = MD.oco.find(x => x.id === c); formOrdem(null, { veiculo_id: o.veiculo_id, tipo: 'corretiva', descricao: o.descricao, ocorrencia_id: o.id }); }
+    if (dd) { modal(`<h2>Descartar ocorrência</h2><label>Motivo (opcional)</label><input id="dsM" placeholder="Ex.: verificado, sem problema"><div id="dsMsg"></div>
+      <div class="row" style="margin-top:12px"><button class="btn sec" onclick="closeModal()">Voltar</button><button class="btn err" id="dsS">Descartar</button></div>`);
+      $('#dsS').onclick = async () => { const { error } = await sb.rpc('descartar_ocorrencia', { p_id: dd, p_motivo: $('#dsM').value }); if (error) return msg('#dsMsg', errText(error)); closeModal(); vManut('ocorrencias'); }; }
+  };
+}
 
 // ===== PWA =====
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
