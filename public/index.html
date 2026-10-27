@@ -95,6 +95,8 @@ nav .n{display:inline-block;min-width:18px;padding:0 5px;margin-left:5px;border-
 .mod{position:fixed;inset:0;background:rgba(10,20,30,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
 .mod .card{width:100%;max-width:440px;max-height:90vh;overflow:auto;margin:0}.mod .card.wide{max-width:760px}
 .fs{border:1px solid var(--ln);border-radius:12px;padding:4px 14px 14px;margin:12px 0 0}.fs legend{font-weight:700;font-size:14px;padding:0 6px;color:var(--navy)}
+.upd{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;background:var(--navy);color:#fff;border-radius:99px;padding:8px 8px 8px 18px;display:flex;gap:12px;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.25);font-size:14px;max-width:calc(100% - 32px);white-space:nowrap}
+.upd .btn{background:var(--pri2)}
 .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}@media(max-width:560px){.row3{grid-template-columns:1fr}}
 .code{font-size:32px;letter-spacing:6px;font-weight:700;text-align:center;padding:12px;background:#eaf2f9;border-radius:10px;color:var(--pri);margin:10px 0}
 .auth{max-width:412px;margin:0 auto;padding-top:48px!important}
@@ -145,6 +147,7 @@ nav .n{display:inline-block;min-width:18px;padding:0 5px;margin-left:5px;border-
 </section>
 
 <div id="modal"></div>
+<div id="upd" class="upd hide" role="status"><span>Nova atualização disponível</span><button class="btn sm" id="updBtn">Atualizar</button></div>
 
 <script>
 // ===== Config =====
@@ -1202,6 +1205,31 @@ function mOcorr(){
       $('#dsS').onclick = async () => { const { error } = await sb.rpc('descartar_ocorrencia', { p_id: dd, p_motivo: $('#dsM').value }); if (error) return msg('#dsMsg', errText(error)); closeModal(); vManut('ocorrencias'); }; }
   };
 }
+
+// ===== Aviso de nova versão =====
+const _hash = s => { let x = 2166136261; for (let i = 0; i < s.length; i++) { x ^= s.charCodeAt(i); x = Math.imul(x, 16777619); } return (x >>> 0).toString(36); };
+let _verBase = null;
+async function _verRemota(){
+  const r = await fetch('./?v=' + Date.now(), { cache: 'no-store' });
+  if (!r.ok) throw new Error('offline');
+  return _hash(await r.text());
+}
+async function checarVersao(){
+  if (location.protocol !== 'https:' || !$('#upd').classList.contains('hide')) return;
+  try {
+    const v = await _verRemota();
+    if (_verBase === null) _verBase = v;
+    else if (v !== _verBase) $('#upd').classList.remove('hide');
+  } catch (e) {}
+}
+$('#updBtn').onclick = async () => {
+  $('#updBtn').disabled = true; $('#updBtn').textContent = 'Atualizando…';
+  try { const reg = await navigator.serviceWorker?.getRegistration(); await reg?.update(); } catch (e) {}
+  location.reload();
+};
+checarVersao();
+setInterval(checarVersao, 5 * 60 * 1000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checarVersao(); });
 
 // ===== PWA =====
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
