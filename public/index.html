@@ -93,7 +93,9 @@ nav .n{display:inline-block;min-width:18px;padding:0 5px;margin-left:5px;border-
 .ag-hours span{padding:4px 0 4px 2px;border-left:1px solid var(--ln)}
 /* modal */
 .mod{position:fixed;inset:0;background:rgba(10,20,30,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
-.mod .card{width:100%;max-width:440px;max-height:90vh;overflow:auto;margin:0}
+.mod .card{width:100%;max-width:440px;max-height:90vh;overflow:auto;margin:0}.mod .card.wide{max-width:760px}
+.fs{border:1px solid var(--ln);border-radius:12px;padding:4px 14px 14px;margin:12px 0 0}.fs legend{font-weight:700;font-size:14px;padding:0 6px;color:var(--navy)}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}@media(max-width:560px){.row3{grid-template-columns:1fr}}
 .code{font-size:32px;letter-spacing:6px;font-weight:700;text-align:center;padding:12px;background:#eaf2f9;border-radius:10px;color:var(--pri);margin:10px 0}
 .auth{max-width:412px;margin:0 auto;padding-top:48px!important}
 .auth .logo{text-align:center;margin-bottom:16px}
@@ -113,7 +115,7 @@ nav .n{display:inline-block;min-width:18px;padding:0 5px;margin-left:5px;border-
   <div class="card" id="boxLogin">
     <h2>Entrar</h2>
     <form id="fLogin">
-      <label>Usuário</label><input id="lUser" autocomplete="username" autocapitalize="none" required>
+      <label>E-mail</label><input id="lUser" type="text" inputmode="email" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="seu.nome@cipatex.com.br" required>
       <label>Senha</label><input id="lPass" type="password" autocomplete="current-password" required>
       <div id="lMsg"></div>
       <button class="btn full">Entrar</button>
@@ -122,9 +124,9 @@ nav .n{display:inline-block;min-width:18px;padding:0 5px;margin-left:5px;border-
   </div>
   <div class="card hide" id="boxAtivar">
     <h2>Ativar conta</h2>
-    <p style="font-size:14px;color:var(--mut);margin:0">Use o usuário e o código de 6 dígitos que o gestor te passou e crie sua senha.</p>
+    <p style="font-size:14px;color:var(--mut);margin:0">Use seu e-mail e o código de 6 dígitos que o gestor te passou e crie sua senha.</p>
     <form id="fAtivar">
-      <label>Usuário</label><input id="aUser" autocapitalize="none" required>
+      <label>E-mail</label><input id="aUser" type="text" inputmode="email" autocapitalize="none" spellcheck="false" placeholder="seu.nome@cipatex.com.br" required>
       <label>Código</label><input id="aCod" inputmode="numeric" maxlength="6" required>
       <label>Nova senha (mín. 6 caracteres)</label><input id="aPass" type="password" autocomplete="new-password" minlength="6" required>
       <label>Repita a senha</label><input id="aPass2" type="password" autocomplete="new-password" minlength="6" required>
@@ -154,7 +156,7 @@ const DOMINIO = 'reservas.powertec.app';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { db: { schema: 'reservas' } });
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const emailDe = u => `${u.trim().toLowerCase()}.${EMPRESA}@${DOMINIO}`;
+const emailDe = u => { u = u.trim().toLowerCase(); return u.includes('@') ? u : `${u}.${EMPRESA}@${DOMINIO}`; };
 const STATUS = {reservada:'Reservada',em_uso:'Em uso',concluida:'Concluída',cancelada:'Cancelada',no_show:'Não retirada'};
 
 let ME = null, EMP = null, CATS = [], VEIC = [], TAB = null;
@@ -170,7 +172,7 @@ const num = n => Number(n||0).toLocaleString('pt-BR');
 
 function msg(el, text, kind='err'){ $(el).innerHTML = text ? `<div class="msg ${kind}">${esc(text)}</div>` : ''; }
 function errText(e){ return e?.message || e?.error_description || String(e); }
-function modal(html){ $('#modal').innerHTML = `<div class="mod"><div class="card">${html}</div></div>`; $('#modal .mod').onclick = e => { if (e.target.classList.contains('mod')) closeModal(); }; }
+function modal(html, wide){ $('#modal').innerHTML = `<div class="mod"><div class="card${wide ? ' wide' : ''}">${html}</div></div>`; $('#modal .mod').onclick = e => { if (e.target.classList.contains('mod')) closeModal(); }; }
 function closeModal(){ $('#modal').innerHTML = ''; }
 
 // ===== Auth =====
@@ -182,7 +184,7 @@ $('#fLogin').onsubmit = async e => {
   const btn = e.submitter; btn.disabled = true;
   const { error } = await sb.auth.signInWithPassword({ email: emailDe($('#lUser').value), password: $('#lPass').value });
   btn.disabled = false;
-  if (error) return msg('#lMsg', error.message.includes('Invalid') ? 'Usuário ou senha incorretos' : errText(error));
+  if (error) return msg('#lMsg', error.message.includes('Invalid') ? 'E-mail ou senha incorretos. Primeiro acesso? Use "Ativar conta".' : errText(error));
   boot();
 };
 
@@ -456,7 +458,7 @@ async function vVeiculos(){
   <div class="card"><h2>Categorias</h2>
     <div class="toolbar"><div><input id="cNome" placeholder="Nova categoria (ex.: Utilitário)"></div><button class="btn" id="cAdd">Adicionar</button></div>
     <div id="cMsg2"></div><div class="list" id="cL"></div></div>
-  <div class="card"><h2>Veículos (${VEIC.length})</h2>
+  <div class="card"><h2>Veículos (${VEIC.filter(v => !v.excluido).length})</h2>
     <div class="toolbar"><div><input id="vQ" placeholder="Buscar placa ou modelo"></div><button class="btn sec" id="vImp">Importar planilha</button><button class="btn" id="vAdd">+ Veículo</button></div>
     <div class="list" id="vL"></div></div>
   <div class="card"><h2>Bloqueios para manutenção</h2>
@@ -465,7 +467,7 @@ async function vVeiculos(){
   $('#vImp').onclick = importarVeiculos;
   carregarBloqueios();
   $('#cL').innerHTML = CATS.length ? CATS.map(c => `<div class="item"><div class="grow"><div class="t">${esc(c.nome)}</div>
-    <div class="s">${VEIC.filter(v=>v.categoria_id===c.id).length} veículo(s)</div></div>
+    <div class="s">${VEIC.filter(v=>v.categoria_id===c.id && !v.excluido).length} veículo(s)</div></div>
     ${c.ativo?'':'<span class="tag">Inativa</span>'}<button class="btn sm sec" data-c="${c.id}">Editar</button></div>`).join('') : '<div class="empty">Crie categorias como Passeio, Utilitário, Caminhonete…</div>';
   $('#cAdd').onclick = async () => {
     const nome = $('#cNome').value.trim(); if (!nome) return;
@@ -482,7 +484,7 @@ async function vVeiculos(){
   };
   const drawV = () => {
     const t = $('#vQ').value.trim().toLowerCase();
-    const vs = VEIC.filter(v => !t || (v.placa+' '+v.modelo).toLowerCase().includes(t));
+    const vs = VEIC.filter(v => !v.excluido && (!t || (v.placa+' '+v.modelo).toLowerCase().includes(t)));
     $('#vL').innerHTML = vs.length ? vs.map(v => `<div class="item"><div class="grow"><div class="t">${esc(v.modelo)} · ${esc(v.placa)}</div>
       <div class="s">${esc(v.categoria?.nome||'Sem categoria')} · ${num(v.km_atual)} km${v.descricao?' · '+esc(v.descricao):''}</div></div>
       ${v.ativo?'':'<span class="tag cancelada">Inativo</span>'}<button class="btn sm sec" data-v="${v.id}">Editar</button></div>`).join('') : '<div class="empty">Nenhum veículo cadastrado</div>';
@@ -503,8 +505,10 @@ function formVeiculo(v){
     <label><input type="checkbox" id="fvA" style="width:auto" ${v.ativo?'checked':''}> Ativo (disponível para reserva)</label>` : ''}
     <div id="fvMsg"></div>
     <div class="row" style="margin-top:12px"><button class="btn sec" onclick="closeModal()">Voltar</button><button class="btn" id="fvS">Salvar</button></div>
-    ${v ? `<button class="btn sec full" id="fvB">Bloquear para manutenção</button>` : ''}`);
+    ${v ? `<button class="btn sec full" id="fvB">Bloquear para manutenção</button><button class="btn err full" id="fvX">Excluir veículo</button>` : ''}`);
   if (v) $('#fvB').onclick = () => formBloqueio(v);
+  if (v) $('#fvX').onclick = () => confirmar(`Excluir ${v.modelo} · ${v.placa}? Reservas futuras dele serão canceladas. O histórico de uso e manutenção continua nos relatórios.`, async () => {
+    const { data, error } = await sb.rpc('excluir_veiculo', { p_id: v.id }); if (error) throw error; await loadBase(); vVeiculos(); });
   $('#fvS').onclick = async () => {
     const d = { placa: $('#fvP').value.trim().toUpperCase().replace(/\s/g,''), modelo: $('#fvM').value.trim(), categoria_id: $('#fvC').value || null,
       descricao: $('#fvD').value.trim() || null, km_atual: parseInt($('#fvK').value,10) || 0 };
@@ -519,20 +523,23 @@ function formVeiculo(v){
 // ===== Usuários (gestor) =====
 async function vUsuarios(){
   $('#main').innerHTML = `<div class="card"><h2>Usuários</h2>
-    <div class="toolbar"><div><input id="uQ" placeholder="Buscar nome ou usuário"></div>
-      <div style="flex:0 0 150px"><select id="uF"><option value="">Todos</option><option value="usuario">Motoristas</option><option value="gestor">Gestores</option><option value="portaria">Portaria</option><option value="pendente">Pendentes</option></select></div>
+    <div class="toolbar"><div><input id="uQ" placeholder="Buscar nome, e-mail, setor ou CPF"></div>
+      <div style="flex:0 0 150px"><select id="uF"><option value="">Todos</option><option value="usuario">Motoristas</option><option value="gestor">Gestores</option><option value="portaria">Portaria</option><option value="pendente">Pendentes</option><option value="cnh">CNH vencida/vencendo</option><option value="semcnh">Sem dados de CNH</option></select></div>
       <button class="btn sec" id="uImp">Importar planilha</button><button class="btn sec" id="uCod">Códigos pendentes</button><button class="btn" id="uAdd">+ Usuário</button></div>
     <div class="stat" id="uStat"></div><div class="list" id="uL"><div class="empty">Carregando…</div></div></div>`;
-  const { data } = await sb.from('usuarios').select('*').order('nome');
-  const us = data || [];
-  $('#uStat').innerHTML = `<div><b>${us.filter(u=>u.ativo).length}</b><span>Ativos</span></div><div><b>${us.filter(u=>u.status==='pendente'&&u.ativo).length}</b><span>Aguardando 1º acesso</span></div><div><b>${us.filter(u=>u.papel==='gestor').length}</b><span>Gestores</span></div><div><b>${us.filter(u=>u.papel==='portaria').length}</b><span>Portaria</span></div>`;
+  const [{ data }, { data: cd }] = await Promise.all([sb.from('usuarios').select('*').order('nome'), sb.from('condutores').select('usuario_id,cargo,setor,cnh_validade,cpf')]);
+  const us = data || []; const CD = {}; (cd || []).forEach(c => CD[c.usuario_id] = c);
+  const cnhSit = u => { const v = CD[u.id]?.cnh_validade; if (!v) return u.papel === 'usuario' ? 'sem' : null; const n = diasAte(v); return n < 0 ? 'vencida' : n <= 30 ? 'vence' : 'ok'; };
+  $('#uStat').innerHTML = `<div><b>${us.filter(u=>u.ativo).length}</b><span>Ativos</span></div><div><b>${us.filter(u=>u.status==='pendente'&&u.ativo).length}</b><span>Aguardando 1º acesso</span></div><div><b>${us.filter(u=>u.papel==='gestor').length}</b><span>Gestores</span></div><div><b>${us.filter(u=>u.papel==='portaria').length}</b><span>Portaria</span></div><div><b style="color:${us.some(u=>u.ativo && cnhSit(u)==='vencida')?'var(--err)':'inherit'}">${us.filter(u=>u.ativo && ['vencida','vence'].includes(cnhSit(u))).length}</b><span>CNH vencida ou vencendo</span></div>`;
   const draw = () => {
     const t = $('#uQ').value.trim().toLowerCase();
     const f = $('#uF').value;
-    const l = us.filter(u => (!t || (u.nome+' '+u.usuario).toLowerCase().includes(t)) && (!f || (f === 'pendente' ? u.status === 'pendente' : u.papel === f)));
-    $('#uL').innerHTML = l.map(u => `<div class="item"><div class="grow"><div class="t">${esc(u.nome)}</div><div class="s">${esc(u.usuario)}</div></div>
+    const l = us.filter(u => (!t || [u.nome, u.usuario, CD[u.id]?.setor, CD[u.id]?.cargo, CD[u.id]?.cpf].join(' ').toLowerCase().includes(t))
+      && (!f || (f === 'pendente' ? u.status === 'pendente' : f === 'cnh' ? ['vencida','vence'].includes(cnhSit(u)) : f === 'semcnh' ? cnhSit(u) === 'sem' : u.papel === f)));
+    $('#uL').innerHTML = l.map(u => { const c = CD[u.id], s = cnhSit(u); return `<div class="item"><div class="grow"><div class="t">${esc(u.nome)}</div><div class="s">${esc(u.usuario)}${c?.cargo || c?.setor ? ' · ' + esc([c.cargo, c.setor].filter(Boolean).join(' · ')) : ''}</div></div>
+      ${s === 'vencida' ? '<span class="tag cancelada">CNH vencida</span>' : s === 'vence' ? '<span class="tag alerta">CNH vence em breve</span>' : ''}
       ${u.papel==='gestor'?'<span class="tag gestor">Gestor</span>':''}${u.papel==='portaria'?'<span class="tag portaria">Portaria</span>':''}${u.status==='pendente'?'<span class="tag pendente">Pendente</span>':''}${u.ativo?'':'<span class="tag cancelada">Desativado</span>'}
-      <button class="btn sm sec" data-u="${u.id}">Editar</button></div>`).join('') || '<div class="empty">Nenhum usuário</div>';
+      <button class="btn sm sec" data-u="${u.id}">Editar</button></div>`; }).join('') || '<div class="empty">Nenhum usuário</div>';
   };
   $('#uQ').oninput = draw; $('#uF').onchange = draw; draw();
   $('#uAdd').onclick = () => formUsuario(null);
@@ -549,32 +556,87 @@ function mostrarCodigo(nome, usuario, codigo){
   const url = location.origin + location.pathname + (EMPRESA !== 'cipatex' ? `?e=${EMPRESA}` : '');
   modal(`<h2>Código de acesso</h2><p style="margin:0">Passe para <b>${esc(nome)}</b>:</p>
     <div class="code">${esc(codigo)}</div>
-    <p style="font-size:14px">Acesse <b>${esc(url)}</b>, toque em <b>Ativar conta</b> e informe o usuário <b>${esc(usuario)}</b>, o código acima e a senha que quiser.</p>
+    <p style="font-size:14px">Acesse <b>${esc(url)}</b>, toque em <b>Ativar conta</b> e informe o e-mail <b>${esc(usuario)}</b>, o código acima e a senha que quiser.</p>
     <p style="font-size:13px;color:var(--mut)">Vale por 7 dias. Este código não aparece de novo; se perder, gere outro em "Redefinir senha".</p>
     <button class="btn full" id="mcCopy">Copiar mensagem</button><button class="btn sec full" onclick="closeModal();vUsuarios()">Fechar</button>`);
-  $('#mcCopy').onclick = () => { navigator.clipboard?.writeText(`Acesso ao sistema de reserva de veículos:\n${url}\nToque em "Ativar conta"\nUsuário: ${usuario}\nCódigo: ${codigo}\n(válido por 7 dias)`); $('#mcCopy').textContent = 'Copiado!'; };
+  $('#mcCopy').onclick = () => { navigator.clipboard?.writeText(`Acesso ao sistema de reserva de veículos:\n${url}\nToque em "Ativar conta"\nE-mail: ${usuario}\nCódigo: ${codigo}\n(válido por 7 dias)`); $('#mcCopy').textContent = 'Copiado!'; };
 }
 
-function formUsuario(u){
-  const sugestao = n => n.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim().split(/\s+/).filter(Boolean).reduce((a,p,i,arr)=> i===0?p:(i===arr.length-1?a+'.'+p:a),'').replace(/[^a-z0-9._-]/g,'');
-  modal(`<h2>${u?'Editar':'Novo'} usuário</h2>
-    <label>Nome completo</label><input id="fuN" value="${esc(u?.nome||'')}">
-    <label>Usuário (login)</label><input id="fuU" value="${esc(u?.usuario||'')}" autocapitalize="none" ${u?.auth_id?'disabled':''} placeholder="ex.: joao.silva">
-    <label>Papel</label><select id="fuP"><option value="usuario">Usuário (motorista)</option><option value="portaria" ${u?.papel==='portaria'?'selected':''}>Portaria (entrega e recebe chaves)</option><option value="gestor" ${u?.papel==='gestor'?'selected':''}>Gestor</option></select>
-    ${u ? `<label><input type="checkbox" id="fuA" style="width:auto" ${u.ativo?'checked':''}> Ativo</label>` : ''}
+const soDig = s => String(s || '').replace(/\D/g, '');
+const cpfValido = c => { c = soDig(c); if (c.length !== 11 || /^(\d)\1{10}$/.test(c)) return false;
+  const dv = n => { let s = 0; for (let i = 0; i < n; i++) s += +c[i] * (n + 1 - i); const r = (s * 10) % 11; return r === 10 ? 0 : r; };
+  return dv(9) === +c[9] && dv(10) === +c[10]; };
+const fmtCPF = c => { c = soDig(c); return c.length === 11 ? c.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : c; };
+const fmtCEP = c => { c = soDig(c); return c.length === 8 ? c.replace(/(\d{5})(\d{3})/, '$1-$2') : c; };
+const UFS = 'AC AL AP AM BA CE DF ES GO MA MT MS MG PA PB PR PE PI RJ RN RS RO RR SC SP SE TO'.split(' ');
+
+async function formUsuario(u){
+  let c = {};
+  if (u) { const { data } = await sb.from('condutores').select('*').eq('usuario_id', u.id).maybeSingle(); c = data || {}; }
+  const f = (id, label, val, attrs = '') => `<div><label>${label}</label><input id="${id}" value="${esc(val ?? '')}" ${attrs}></div>`;
+  const dt = (id, label, val, attrs = '') => f(id, label, val, `type="date" ${attrs}`);
+  modal(`<h2>${u ? esc(u.nome) : 'Novo usuário'}</h2>
+    <fieldset class="fs"><legend>Acesso</legend>
+      <label>Nome completo</label><input id="fuN" value="${esc(u?.nome || '')}">
+      <div class="row">
+        <div><label>E-mail (login)</label><input id="fuU" type="text" inputmode="email" value="${esc(u?.usuario || '')}" autocapitalize="none" spellcheck="false" ${u?.auth_id ? 'disabled' : ''} placeholder="nome.sobrenome@cipatex.com.br"></div>
+        <div><label>Papel</label><select id="fuP"><option value="usuario">Motorista</option><option value="portaria" ${u?.papel === 'portaria' ? 'selected' : ''}>Portaria (entrega e recebe chaves)</option><option value="gestor" ${u?.papel === 'gestor' ? 'selected' : ''}>Gestor</option></select></div>
+      </div>
+      ${u ? `<label class="chk"><input type="checkbox" id="fuA" ${u.ativo ? 'checked' : ''}> Ativo</label>` : ''}
+      ${u?.auth_id ? '<p class="hint" style="margin:4px 0 0">O login não pode mudar depois do primeiro acesso.</p>' : ''}
+    </fieldset>
+    <fieldset class="fs"><legend>Dados pessoais</legend>
+      <div class="row3">${f('cCargo', 'Cargo / função', c.cargo)}${f('cSetor', 'Setor', c.setor)}${dt('cNasc', 'Data de nascimento', c.data_nascimento, `max="${hojeISO()}"`)}</div>
+      <div class="row3">${f('cCpf', 'CPF', fmtCPF(c.cpf), 'inputmode="numeric" placeholder="000.000.000-00"')}${f('cRg', 'RG', c.rg)}${f('cRgO', 'Órgão emissor', c.rg_orgao, 'placeholder="SSP/SP"')}</div>
+      <div class="row">${f('cTel', 'Telefone / WhatsApp', c.telefone, 'inputmode="tel" placeholder="(15) 99999-9999"')}${f('cEmail', 'E-mail pessoal (opcional)', c.email_contato, 'inputmode="email"')}</div>
+    </fieldset>
+    <fieldset class="fs"><legend>Endereço</legend>
+      <div class="row3">${f('cCep', 'CEP', fmtCEP(c.cep), 'inputmode="numeric" placeholder="00000-000"')}<div style="grid-column:span 2"><label>Rua</label><input id="cRua" value="${esc(c.logradouro || '')}"></div></div>
+      <div class="row3">${f('cNum', 'Número', c.numero)}${f('cComp', 'Complemento', c.complemento)}${f('cBai', 'Bairro', c.bairro)}</div>
+      <div class="row">${f('cCid', 'Cidade', c.cidade)}<div><label>UF</label><select id="cUf"><option value=""></option>${UFS.map(x => `<option ${x === (c.uf || '') ? 'selected' : ''}>${x}</option>`).join('')}</select></div></div>
+    </fieldset>
+    <fieldset class="fs"><legend>CNH</legend>
+      <div class="row3">${f('cCnh', 'Nº registro', c.cnh_numero, 'inputmode="numeric"')}<div><label>Categoria</label><select id="cCat">${['', 'A', 'B', 'AB', 'C', 'AC', 'D', 'AD', 'E', 'AE'].map(x => `<option ${x === (c.cnh_categoria || '') ? 'selected' : ''}>${x}</option>`).join('')}</select></div>${dt('cPri', '1ª habilitação', c.cnh_primeira_habilitacao)}</div>
+      <div class="row">${dt('cExp', 'Data de expedição', c.cnh_expedicao)}${dt('cVal', 'Validade', c.cnh_validade)}</div>
+      <div id="cnhAviso"></div>
+    </fieldset>
+    <fieldset class="fs"><legend>Observações</legend><textarea id="cObs" rows="2">${esc(c.observacoes || '')}</textarea></fieldset>
+    <p class="hint">Dados pessoais só ficam visíveis para gestores.</p>
     <div id="fuM"></div>
     <div class="row" style="margin-top:12px"><button class="btn sec" onclick="closeModal()">Voltar</button><button class="btn" id="fuS">Salvar</button></div>
-    ${u && u.id !== ME.id ? `<button class="btn sec full" id="fuR">Redefinir senha (gerar novo código)</button>` : ''}`);
-  if (!u) $('#fuN').oninput = () => { if (!$('#fuU').dataset.edit) $('#fuU').value = sugestao($('#fuN').value); };
-  $('#fuU').oninput = () => $('#fuU').dataset.edit = '1';
+    ${u && u.id !== ME.id ? `<button class="btn sec full" id="fuR">${u.status === 'pendente' ? 'Gerar código de acesso' : 'Redefinir senha (gerar novo código)'}</button>` : ''}`, true);
+
+  const avisoCnh = () => { const v = $('#cVal').value; if (!v) return $('#cnhAviso').innerHTML = '';
+    const n = diasAte(v); $('#cnhAviso').innerHTML = n < 0 ? `<div class="msg err">CNH vencida há ${-n} dia(s).</div>` : n <= 30 ? `<div class="msg info">CNH vence em ${n} dia(s).</div>` : ''; };
+  $('#cVal').onchange = avisoCnh; avisoCnh();
+  $('#cCpf').onblur = () => { $('#cCpf').value = fmtCPF($('#cCpf').value); };
+  $('#cCep').onblur = async () => {
+    const cep = soDig($('#cCep').value); $('#cCep').value = fmtCEP(cep);
+    if (cep.length !== 8 || $('#cRua').value) return;
+    try { const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`); const j = await r.json();
+      if (!j.erro) { $('#cRua').value = j.logradouro || ''; $('#cBai').value = j.bairro || ''; $('#cCid').value = j.localidade || ''; $('#cUf').value = j.uf || ''; $('#cNum').focus(); }
+    } catch (e) {}
+  };
+
   $('#fuS').onclick = async () => {
     const nome = $('#fuN').value.trim(), usuario = $('#fuU').value.trim().toLowerCase();
-    if (nome.length < 2) return msg('#fuM','Informe o nome');
+    if (nome.length < 2) return msg('#fuM', 'Informe o nome');
+    if (!/^[a-z0-9._-]{3,40}$/.test(usuario) && !/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(usuario)) return msg('#fuM', 'Informe um e-mail válido para o login');
+    const cpf = soDig($('#cCpf').value);
+    if (cpf && !cpfValido(cpf)) return msg('#fuM', 'CPF inválido. Confira os números.');
+    const exp = $('#cExp').value, val = $('#cVal').value;
+    if (exp && val && val <= exp) return msg('#fuM', 'A validade da CNH precisa ser depois da expedição.');
     $('#fuS').disabled = true;
-    const { data, error } = await sb.rpc('salvar_usuario', { p_id: u?.id || null, p_nome: nome, p_usuario: usuario, p_papel: $('#fuP').value, p_ativo: u ? $('#fuA').checked : true });
+    const r1 = await sb.rpc('salvar_usuario', { p_id: u?.id || null, p_nome: nome, p_usuario: usuario, p_papel: $('#fuP').value, p_ativo: u ? $('#fuA').checked : true });
+    if (r1.error) { $('#fuS').disabled = false; return msg('#fuM', errText(r1.error)); }
+    const id = u?.id || r1.data.id;
+    const r2 = await sb.rpc('salvar_condutor', { p_usuario: id, p: { cargo: $('#cCargo').value, setor: $('#cSetor').value, data_nascimento: $('#cNasc').value, cpf,
+      rg: $('#cRg').value, rg_orgao: $('#cRgO').value, telefone: $('#cTel').value, email_contato: $('#cEmail').value, cep: $('#cCep').value,
+      logradouro: $('#cRua').value, numero: $('#cNum').value, complemento: $('#cComp').value, bairro: $('#cBai').value, cidade: $('#cCid').value, uf: $('#cUf').value,
+      cnh_numero: $('#cCnh').value, cnh_categoria: $('#cCat').value, cnh_expedicao: exp, cnh_validade: val, cnh_primeira_habilitacao: $('#cPri').value, observacoes: $('#cObs').value } });
     $('#fuS').disabled = false;
-    if (error) return msg('#fuM', errText(error));
-    if (!u && data?.codigo) return mostrarCodigo(nome, usuario, data.codigo);
+    if (r2.error) { if (!u) u = { id, nome, usuario, papel: $('#fuP').value, ativo: true, status: 'pendente' }; return msg('#fuM', (u ? 'Acesso salvo, mas os dados pessoais não: ' : '') + errText(r2.error)); }
+    if (!u && r1.data?.codigo) return mostrarCodigo(nome, usuario, r1.data.codigo);
     closeModal(); vUsuarios();
   };
   if ($('#fuR')) $('#fuR').onclick = async () => {
@@ -759,12 +821,12 @@ function importarVeiculos(){
 }
 
 function importarUsuarios(){
-  telaImport('Importar usuários', 'Colunas: <b>Nome</b>, <b>Usuário</b> (login: minúsculas, sem espaço, ex.: joao.silva) e Papel (Motorista, Portaria ou Gestor; vazio = Motorista). Logins que já existem são ignorados. No fim você baixa uma planilha com o código de ativação de cada pessoa.',
-    () => baixarXLSX('modelo-usuarios.xlsx', [['Usuários', [{ Nome: 'João da Silva', 'Usuário': 'joao.silva', Papel: 'Motorista' }, { Nome: 'Maria Souza', 'Usuário': 'maria.souza', Papel: 'Gestor' }, { Nome: 'Carlos Lima', 'Usuário': 'portaria.carlos', Papel: 'Portaria' }], [28,20,14]]]),
+  telaImport('Importar usuários', 'Colunas: <b>Nome</b>, <b>E-mail</b> (vira o login), Função, Setor e Papel (Motorista, Portaria ou Gestor; vazio = Motorista). E-mails que já existem são ignorados. No fim você baixa uma planilha com o código de ativação de cada pessoa.',
+    () => baixarXLSX('modelo-usuarios.xlsx', [['Usuários', [{ Nome: 'João da Silva', 'E-mail': 'joao.silva@cipatex.com.br', 'Função': 'Vendedor', Setor: 'Comercial', Papel: 'Motorista' }, { Nome: 'Maria Souza', 'E-mail': 'maria.souza@cipatex.com.br', 'Função': 'Coordenadora', Setor: 'Frota', Papel: 'Gestor' }, { Nome: 'Carlos Lima', 'E-mail': 'carlos.lima@cipatex.com.br', 'Função': 'Porteiro', Setor: 'Portaria', Papel: 'Portaria' }], [28,32,18,16,12]]]),
     async f => {
-      const linhas = await lerPlanilha(f, { nome: 'nome', nomecompleto: 'nome', usuario: 'usuario', login: 'usuario', papel: 'papel', perfil: 'papel', funcao: 'papel' });
+      const linhas = await lerPlanilha(f, { nome: 'nome', nomecompleto: 'nome', funcionario: 'nome', condutor: 'nome', motorista: 'nome', usuario: 'usuario', login: 'usuario', email: 'usuario', papel: 'papel', perfil: 'papel', funcao: 'cargo', cargo: 'cargo', secao: 'setor', setor: 'setor', departamento: 'setor' });
       if (!linhas.length) throw new Error('Nenhuma linha encontrada. Confira se a primeira linha tem os títulos das colunas.');
-      if (!linhas.some(l => l.usuario)) throw new Error('Não achei a coluna "Usuário".');
+      if (!linhas.some(l => l.usuario)) throw new Error('Não achei a coluna "E-mail".');
       const { data, error } = await sb.rpc('importar_usuarios', { p_linhas: linhas }); if (error) throw error;
       $('#imMsg').innerHTML = `<div class="msg ok">${data.criados.length} usuário(s) criado(s)${data.ignorados ? `, ${data.ignorados} já existiam (ignorados)` : ''}.</div>` + listaErros(data.erros) +
         (data.criados.length ? `<button class="btn ok full" id="imCod">Baixar planilha com os códigos</button>` : '');
@@ -775,8 +837,8 @@ function importarUsuarios(){
 async function baixarCodigos(lista, semModal){
   const url = location.origin + location.pathname;
   const papel = { usuario: 'Motorista', gestor: 'Gestor', portaria: 'Portaria' };
-  await baixarXLSX(`codigos-acesso-${toDateInput(new Date())}.xlsx`, [['Códigos', lista.map(c => ({ Nome: c.nome, 'Usuário': c.usuario, Papel: papel[c.papel] || c.papel, 'Código': c.codigo,
-    'Mensagem': `Acesso ao sistema de reserva de veículos: ${url} - toque em "Ativar conta". Usuário: ${c.usuario} - Código: ${c.codigo} (válido por 7 dias)` })), [28,20,12,10,90]]]);
+  await baixarXLSX(`codigos-acesso-${toDateInput(new Date())}.xlsx`, [['Códigos', lista.map(c => ({ Nome: c.nome, 'E-mail (login)': c.usuario, Papel: papel[c.papel] || c.papel, 'Código': c.codigo,
+    'Mensagem': `Acesso ao sistema de reserva de veículos: ${url} - toque em "Ativar conta". E-mail: ${c.usuario} - Código: ${c.codigo} (válido por 7 dias)` })), [28,20,12,10,90]]]);
   if (!semModal) modal(`<h2>Códigos gerados</h2><p>Baixei a planilha com ${lista.length} código(s). Eles valem por 7 dias.</p><p class="hint">A coluna "Mensagem" já está pronta para copiar e mandar pelo WhatsApp.</p><button class="btn full" onclick="closeModal();vUsuarios()">Ok</button>`);
 }
 
@@ -1070,7 +1132,7 @@ function formPlano(p){
     <div><label>Avisar faltando (dias)</label><input type="number" min="0" id="fpAD" value="${p?.aviso_dias ?? 15}"></div></div>
     <label>Vale para</label><select id="fpA"><option value="">Todos os veículos</option>
       <optgroup label="Categoria">${CATS.map(c => `<option value="c:${c.id}" ${alvo === 'c:' + c.id ? 'selected' : ''}>${esc(c.nome)}</option>`).join('')}</optgroup>
-      <optgroup label="Veículo específico">${VEIC.map(v => `<option value="v:${v.id}" ${alvo === 'v:' + v.id ? 'selected' : ''}>${esc(v.modelo)} · ${esc(v.placa)}</option>`).join('')}</optgroup></select>
+      <optgroup label="Veículo específico">${VEIC.filter(v => !v.excluido).map(v => `<option value="v:${v.id}" ${alvo === 'v:' + v.id ? 'selected' : ''}>${esc(v.modelo)} · ${esc(v.placa)}</option>`).join('')}</optgroup></select>
     ${p ? `<label class="chk"><input type="checkbox" id="fpAt" ${p.ativo ? 'checked' : ''}> Ativo</label>` : `<p class="hint">Sem histórico, a contagem começa hoje, com o KM atual de cada veículo. Depois você pode informar o último serviço real de cada um.</p>`}
     <div id="fpMsg"></div><div class="row" style="margin-top:12px"><button class="btn sec" onclick="closeModal()">Voltar</button><button class="btn" id="fpS">Salvar</button></div>`);
   document.querySelectorAll('.chip').forEach(c => c.onclick = () => { const s = SUGESTOES[c.dataset.i]; $('#fpN').value = s[0]; $('#fpK').value = s[1]; $('#fpM').value = s[2]; });
