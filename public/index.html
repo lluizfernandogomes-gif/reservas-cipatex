@@ -265,7 +265,7 @@ function vNova(){
     </div>
     <div class="row">
       <div><label>Categoria</label><select id="nCat"><option value="">Todas</option>${CATS.filter(c=>c.ativo).map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join('')}</select></div>
-      <div><label>Destino / motivo</label><input id="nDest" placeholder="Opcional"></div>
+      <div><label>Destino / motivo *</label><input id="nDest" maxlength="200" placeholder="Ex.: visita cliente X em Tatuí" required></div>
     </div>
     ${gestor ? `<label>Reservar para</label><select id="nPara"><option value="">Eu mesmo</option></select>` : ''}
     <div id="nMsg"></div>
@@ -308,6 +308,7 @@ function vNova(){
     if (!isNaN(a) && (isNaN(b) || b <= a)) { $('#nFim').value = toLocalInput(new Date(a.getTime()+2*3600e3)); refresh(); }
   });
   $('#nBtn').onclick = async () => {
+    if ($('#nDest').value.trim().length < 3) { msg('#nMsg', 'Informe o destino / motivo da viagem'); $('#nDest').focus(); return; }
     $('#nBtn').disabled = true;
     const { error } = await sb.rpc('criar_reserva', {
       p_veiculo: sel, p_inicio: new Date($('#nIni').value).toISOString(), p_fim: new Date($('#nFim').value).toISOString(),
